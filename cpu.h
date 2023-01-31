@@ -1,0 +1,39 @@
+#ifndef CPU_H
+#define CPU_H
+
+#include "types.h"
+
+#define MEMORY_MAX 0xFFFF
+
+typedef struct cpu cpu_t;
+
+struct cpu {
+	u8 a; 			// Register A
+	u8 x;			// Register X
+	u8 y;			// Register Y
+
+	u16 pc;			// Program Counter
+	u16 sp; 		// Stack Pointer					
+	u8 sr; 			// Status Register
+
+	u8 memory[MEMORY_MAX];
+};
+
+cpu_t *cpu_init();
+
+u8 cpu_mem_read(cpu_t *cpu, u16 addr);
+void cpu_mem_write(cpu_t *cpu, u16 addr, u8 data);
+
+u16 cpu_mem_read_u16(cpu_t *cpu, u16 pos);
+void cpu_mem_write_u16(cpu_t *cpu, u16 pos, u16 data);
+
+void cpu_reset(cpu_t *cpu);
+
+void cpu_load(cpu_t *cpu, u8 *program, int size);
+void cpu_run(cpu_t *cpu);
+void cpu_load_and_run(cpu_t *cpu, u8 *program, int size);
+
+
+void cpu_regdump(cpu_t *cpu);
+
+#endif
