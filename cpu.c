@@ -14,6 +14,8 @@ static void opcode_lda(cpu_t *cpu, int addr_mode);
 static void opcode_tax(cpu_t *cpu, int addr_mode);
 static void opcode_inx(cpu_t *cpu, int addr_mode);
 
+
+
 static opcode_t optable[256];
 
 static void opcode_assign(u8 code, char *mnemonic, int bytes, int cycles, opcode_proc proc, enum addressing_mode_t mode) {
@@ -98,78 +100,11 @@ void cpu_run(cpu_t *cpu) {
 
 		opcode_t opcode = optable[code];
 
-		switch (opscode) {
-			// LDA
-			case 0xA9: {
-				u16 addr = get_operand_address(cpu, IMM);
-				u8 param = cpu_mem_read(cpu, addr);
-
-				cpu->a = param;
-
-				update_zero_and_negative_flags(cpu, cpu->a);
-				cpu->pc += 1;
-
-			} break;
-
-			case 0xA5: {
-				u16 addr = get_operand_address(cpu, ZP);
-				u8 param = cpu_mem_read(cpu, addr);
-
-				cpu->a = param;
-
-				update_zero_and_negative_flags(cpu, cpu->a);
-				cpu->pc += 1;
-
-			} break;
-
-			case 0xAD: {
-				u16 addr = get_operand_address(cpu, ABS);
-				u8 param = cpu_mem_read(cpu, addr);
-
-				cpu->a = param;
-
-				update_zero_and_negative_flags(cpu, cpu->a);
-				cpu->pc += 2;
-
-			} break;
-
-			// STA
-			case 0x85: {
-				u16 addr = get_operand_address(cpu, ZP);
-				cpu_mem_write(cpu, addr, cpu->a);
-				cpu->pc++;
-			} break;
-
-			case 0x95: {
-				u16 addr = get_operand_address(cpu, ZPX);
-				cpu_mem_write(cpu, addr, cpu->a);
-				cpu->pc++;
-			} break;
-
-			// TAX
-			case 0xAA: {
-				cpu->x = cpu->a;		
-
-				update_zero_and_negative_flags(cpu, cpu->x);
-				
-			} break;
-
-			// INX
-			case 0xE8: {
-				cpu->x++;
-
-				update_zero_and_negative_flags(cpu, cpu->x);
-			} break;
-			case 0x00: 
-				goto eof;
-				break;
-			default: {
-				printf("Unknown opcode");	
-				goto eof;
-			} break;
+		if (code == 0x00) goto eof;
+		else {
+			opcode.proc(cpu, opcode.mode);
 		}
 	}
-
 eof: ;
 }
 
