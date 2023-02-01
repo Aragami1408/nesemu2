@@ -6,18 +6,8 @@
 #define MEMORY_MAX 0xFFFF
 
 typedef struct cpu cpu_t;
+typedef struct opcode opcode_t;
 
-struct cpu {
-	u8 a; 			// Register A
-	u8 x;			// Register X
-	u8 y;			// Register Y
-
-	u16 pc;			// Program Counter
-	u16 sp; 		// Stack Pointer					
-	u8 sr; 			// Status Register
-
-	u8 memory[MEMORY_MAX];
-};
 
 cpu_t *cpu_init();
 
@@ -35,5 +25,52 @@ void cpu_load_and_run(cpu_t *cpu, u8 *program, int size);
 
 
 void cpu_regdump(cpu_t *cpu);
+
+void cpu_free(cpu_t *cpu);
+
+enum addressing_mode_t {
+	// Immediate
+	IMM,
+
+	// Zero Page
+	ZP,
+	ZPX,
+	ZPY,
+
+	// Absolute
+	ABS,
+	ABSX,
+	ABSY,
+
+	// Indirect
+	INDX,
+	INDY,
+
+	// None Addressing
+	NONE
+};
+
+struct cpu {
+	u8 a; 			// Register A
+	u8 x;			// Register X
+	u8 y;			// Register Y
+
+	u16 pc;			// Program Counter
+	u16 sp; 		// Stack Pointer					
+	u8 sr; 			// Status Register
+
+	u8 memory[MEMORY_MAX];
+};
+
+typedef void (*opcode_proc)(cpu_t *, int);
+struct opcode {
+	u8 code;
+	char mnemonic[4];
+	int bytes;
+	int cycles;
+	opcode_proc proc;
+	enum addressing_mode_t mode;
+};
+
 
 #endif

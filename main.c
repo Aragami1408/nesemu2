@@ -5,11 +5,14 @@
 
 int main() {
 	cpu_t *cpu = cpu_init();
-	u8 test[] = {0xa9, 0xc0, 0xaa, 0xe8, 0x00};
+	cpu_mem_write(cpu, 0x10, 0x55);
 
-	cpu_load_and_run(cpu, test, 5);
+	u8 program[] = {0xA5, 0x10, 0x00};
+	cpu_load_and_run(cpu, program, 3);
 
 	cpu_regdump(cpu);
+
+	cpu_free(cpu);
 	
 	return 0;
 }
