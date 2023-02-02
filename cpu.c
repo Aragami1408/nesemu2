@@ -16,7 +16,12 @@ static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
 static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
 static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 static opcode_t optable[0xFF + 1];
@@ -33,6 +38,10 @@ static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcod
 
 static void optable_generator() {
 	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
+	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
+	optable_assign(0x8a, "TXA", 1, 2, &opcode_txa, NONE);	
+	optable_assign(0x98, "TYA", 1, 2, &opcode_tya, NONE);	
+
 	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
 
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
@@ -172,6 +181,25 @@ static void update_zero_and_negative_flags(cpu_t *cpu, u8 result) {
 	}
 }
 
+// static void update_flags(cpu_t *cpu, u8 result, u8 flags) {
+// 	#define CHECK_BIT(sf) (flags & sf) == 1
+// 	// Zero flag: 0b0000_0010
+// 	if (result == 0 && CHECK_BIT(SF_ZERO)) {
+// 		cpu->sr |= 0x2; 
+// 	}
+// 	else {
+// 		cpu->sr &= 0xFD;
+// 	}
+
+// 	// Negative flag: 0b1000_0000
+// 	if ((result & 0x80) != 0 && CHECK_BIT(SF_NEGATIVE)) {
+// 		cpu->sr |= 0x80;
+// 	}
+// 	else {
+// 		cpu->sr &= 0x7F;
+// 	}
+// }
+
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 	switch (am) {
 		case IMM:
@@ -243,7 +271,6 @@ static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 	cpu->x = value;
 	update_zero_and_negative_flags(cpu, cpu->x);
-
 }
 
 static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
@@ -261,6 +288,25 @@ static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	update_zero_and_negative_flags(cpu, cpu->x);
 }
 
+static void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->y = cpu->a;
+
+	update_zero_and_negative_flags(cpu, cpu->y);
+}
+
+static void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->a = cpu->x;
+
+	update_zero_and_negative_flags(cpu, cpu->a);
+}
+
+static void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->y = cpu->a;
+
+	update_zero_and_negative_flags(cpu, cpu->y);
+
+}
+
 static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x++;
 
@@ -271,3 +317,4 @@ static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	cpu_mem_write(cpu, addr, cpu->a);
 }
+
