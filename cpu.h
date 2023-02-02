@@ -2,6 +2,7 @@
 #define CPU_H
 
 #include "types.h"
+#include "addr_mode.h"
 
 #define MEMORY_MAX 0xFFFF
 
@@ -28,27 +29,6 @@ void cpu_regdump(cpu_t *cpu);
 
 void cpu_free(cpu_t *cpu);
 
-enum addressing_mode_t {
-	// Immediate
-	IMM,
-
-	// Zero Page
-	ZP,
-	ZPX,
-	ZPY,
-
-	// Absolute
-	ABS,
-	ABSX,
-	ABSY,
-
-	// Indirect
-	INDX,
-	INDY,
-
-	// None Addressing
-	NONE
-};
 
 struct cpu {
 	u8 a; 			// Register A
@@ -62,13 +42,15 @@ struct cpu {
 	u8 memory[MEMORY_MAX];
 };
 
-typedef void (*opcode_proc)(cpu_t *, int);
+
+typedef void (*opcode_func)(cpu_t *, enum addressing_mode_t);
+
 struct opcode {
 	u8 code;
 	char mnemonic[4];
 	int bytes;
 	int cycles;
-	opcode_proc proc;
+	opcode_func func;
 	enum addressing_mode_t mode;
 };
 

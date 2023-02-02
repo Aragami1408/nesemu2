@@ -9,36 +9,45 @@
 static void update_zero_and_negative_flags(cpu_t *cpu, u8 result);
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 
-// OPCODES PROCEDURES
-static void opcode_lda(cpu_t *cpu, int addr_mode);
-static void opcode_tax(cpu_t *cpu, int addr_mode);
-static void opcode_inx(cpu_t *cpu, int addr_mode);
+// OPCODES UTILS
+static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+static opcode_t optable[0xFF + 1];
 
 
-
-static opcode_t optable[256];
-
-static void opcode_assign(u8 code, char *mnemonic, int bytes, int cycles, opcode_proc proc, enum addressing_mode_t mode) {
+static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcode_func func, enum addressing_mode_t mode) {
 	optable[code].code = code;
-	strncpy(optable[code].mnemonic, mnemonic, 4);
+	strcpy(optable[code].mnemonic, mnemonic);
 	optable[code].bytes = bytes;
 	optable[code].cycles = cycles;
-	optable[code].proc = proc;
+	optable[code].func = func;
 	optable[code].mode = mode;
 }
 
-static void generate_optable() {
-	opcode_assign(0xAA, "TAX", 1, 2, opcode_tax, NONE);
-	opcode_assign(0xE8, "INX", 1, 2, opcode_inx, NONE);
+static void optable_generator() {
+	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
+	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
 
-	opcode_assign(0xA9, "LDA", 2, 2, opcode_lda, IMM);
-	opcode_assign(0xA5, "LDA", 2, 3, opcode_lda, ZP);
-	opcode_assign(0xB5, "LDA", 2, 4, opcode_lda, ZPX);
-	opcode_assign(0xAD, "LDA", 3, 4, opcode_lda, ABS);
-	opcode_assign(0xBD, "LDA", 3, 4, opcode_lda, ABSX);
-	opcode_assign(0xB9, "LDA", 3, 4, opcode_lda, ABSY);
-	opcode_assign(0xA1, "LDA", 2, 6, opcode_lda, INDX);
-	opcode_assign(0xB1, "LDA", 2, 5, opcode_lda, INDY);
+	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
+	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
+	optable_assign(0xb5, "LDA", 2, 4, &opcode_lda, ZPX);
+	optable_assign(0xad, "LDA", 3, 4, &opcode_lda, ABS);
+	optable_assign(0xbd, "LDA", 3, 4, &opcode_lda, ABSX);
+	optable_assign(0xb9, "LDA", 3, 4, &opcode_lda, ABSY);
+	optable_assign(0xa1, "LDA", 2, 6, &opcode_lda, INDX);
+	optable_assign(0xb1, "LDA", 2, 5, &opcode_lda, INDY);
+	
+	optable_assign(0x85, "STA", 2, 3, &opcode_sta, ZP);
+	optable_assign(0x95, "STA", 2, 4, &opcode_sta, ZPX);
+	optable_assign(0x8d, "STA", 3, 4, &opcode_sta, ABS);
+	optable_assign(0x9d, "STA", 3, 5, &opcode_sta, ABSX);
+	optable_assign(0x99, "STA", 3, 5, &opcode_sta, ABSY);
+	optable_assign(0x81, "STA", 2, 6, &opcode_sta, INDX);
+	optable_assign(0x91, "STA", 2, 6, &opcode_sta, INDY);
+
 }
 
 cpu_t *cpu_init() {
@@ -51,6 +60,8 @@ cpu_t *cpu_init() {
 	cpu->pc = 0;
 	cpu->sp = 0;
 	cpu->sr = 0;
+
+	optable_generator();
 
 	return cpu;
 }
@@ -97,15 +108,17 @@ void cpu_run(cpu_t *cpu) {
 	while (true) {
 		u8 code = cpu_mem_read(cpu, cpu->pc);
 		cpu->pc += 1;
+		u16 pc_state = cpu->pc;
 
 		opcode_t opcode = optable[code];
-
-		if (code == 0x00) goto eof;
+		if (code == 0x00) break;
 		else {
-			opcode.proc(cpu, opcode.mode);
+			opcode.func(cpu, opcode.mode);
 		}
+		
+
+		if (pc_state == cpu->pc) cpu->pc += (u16) (opcode.bytes - 1);
 	}
-eof: ;
 }
 
 void cpu_load_and_run(cpu_t *cpu, u8 *program, int size) {
@@ -200,7 +213,7 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 	return -1;
 }
 
-static void opcode_lda(cpu_t *cpu, int addr_mode) {
+static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	u8 value = cpu_mem_read(cpu, addr);
 
@@ -208,14 +221,19 @@ static void opcode_lda(cpu_t *cpu, int addr_mode) {
 	update_zero_and_negative_flags(cpu, cpu->a);
 }
 
-static void opcode_tax(cpu_t *cpu, int addr_mode) {
+static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x = cpu->a;
 
 	update_zero_and_negative_flags(cpu, cpu->x);
 }
 
-static void opcode_inx(cpu_t *cpu, int addr_mode) {
+static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x++;
 
 	update_zero_and_negative_flags(cpu, cpu->x);
+}
+
+static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	cpu_mem_write(cpu, addr, cpu->a);
 }
