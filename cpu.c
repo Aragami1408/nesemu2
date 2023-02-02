@@ -7,10 +7,14 @@
 
 // CPU UTILS
 static void update_zero_and_negative_flags(cpu_t *cpu, u8 result);
+static void update_flags(cpu_t *cpu, u8 result, u8 flags);
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 
 // OPCODES UTILS
 static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
 static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
 static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
@@ -39,6 +43,18 @@ static void optable_generator() {
 	optable_assign(0xb9, "LDA", 3, 4, &opcode_lda, ABSY);
 	optable_assign(0xa1, "LDA", 2, 6, &opcode_lda, INDX);
 	optable_assign(0xb1, "LDA", 2, 5, &opcode_lda, INDY);
+	
+	optable_assign(0xa2, "LDX", 2, 2, &opcode_ldx, IMM);
+	optable_assign(0xa6, "LDX", 2, 3, &opcode_ldx, ZP);
+	optable_assign(0xb6, "LDX", 2, 4, &opcode_ldx, ZPY);
+	optable_assign(0xae, "LDX", 3, 4, &opcode_ldx, ABS);
+	optable_assign(0xbe, "LDX", 3, 4, &opcode_ldx, ABSY);
+
+	optable_assign(0xa0, "LDY", 2, 2, &opcode_ldx, IMM);
+	optable_assign(0xa4, "LDY", 2, 3, &opcode_ldx, ZP);
+	optable_assign(0xb4, "LDY", 2, 4, &opcode_ldx, ZPX);
+	optable_assign(0xac, "LDY", 3, 4, &opcode_ldx, ABS);
+	optable_assign(0xbc, "LDY", 3, 4, &opcode_ldx, ABSY);
 	
 	optable_assign(0x85, "STA", 2, 3, &opcode_sta, ZP);
 	optable_assign(0x95, "STA", 2, 4, &opcode_sta, ZPX);
@@ -219,6 +235,24 @@ static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 	cpu->a = value;
 	update_zero_and_negative_flags(cpu, cpu->a);
+}
+
+static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	u8 value = cpu_mem_read(cpu, addr);
+
+	cpu->x = value;
+	update_zero_and_negative_flags(cpu, cpu->x);
+
+}
+
+static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	u8 value = cpu_mem_read(cpu, addr);
+
+	cpu->y = value;
+	update_zero_and_negative_flags(cpu, cpu->y);
+
 }
 
 static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
