@@ -16,8 +16,8 @@ typedef signed int i32;
 typedef signed long long i64;
 
 // Floating point types
-typedef float f32
-typedef double f64
+typedef float f32;
+typedef double f64;
 
 
 #endif

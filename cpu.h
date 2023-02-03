@@ -10,12 +10,13 @@ typedef struct cpu cpu_t;
 typedef struct opcode opcode_t;
 
 // STATUS FLAGS
-#define SF_NEGATIVE 	1 << 7
-#define SF_OVERFLOW 	1 << 6
-#define SF_DECIMAL 		1 << 3
-#define SF_INTERRUPT 	1 << 2
-#define SF_ZERO 		1 << 1
-#define SF_CARRY 		1 << 0
+#define SF_NEGATIVE 	 1 << 7
+#define SF_OVERFLOW 	 1 << 6
+#define SF_BREAK 		 1 << 4
+#define SF_DECIMAL 	 	 1 << 3
+#define SF_INTERRUPT 	 1 << 2
+#define SF_ZERO 		 1 << 1
+#define SF_CARRY 		 1 << 0
 
 cpu_t *cpu_init();
 
