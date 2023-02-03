@@ -4,6 +4,8 @@
 #include "types.h"
 #include "addr_mode.h"
 
+#include "logger.h"
+
 #define MEMORY_MAX 0xFFFF
 
 typedef struct cpu cpu_t;
@@ -61,5 +63,28 @@ struct opcode {
 	opcode_func func;
 	enum addressing_mode_t mode;
 };
+
+void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 #endif

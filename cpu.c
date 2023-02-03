@@ -6,28 +6,8 @@
 #include <string.h>
 
 // CPU UTILS
-static void update_zero_and_negative_flags(cpu_t *cpu, u8 result);
 static void set_flag(cpu_t *cpu, bool v, u8 flag);
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
-
-// OPCODES UTILS
-static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
-static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
-
-static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
-static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-static void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 static opcode_t optable[0xFF + 1];
 
@@ -43,6 +23,18 @@ static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcod
 
 static void optable_generator() {
 	optable_assign(0x00, "BRK", 2, 2, NULL, NONE); // Don't worry. opcode_func of BRK is already handled in cpu_run's loop already
+												   //
+	optable_assign(0x29, "AND", 2, 2, &opcode_and, IMM);
+	optable_assign(0x25, "AND", 2, 3, &opcode_and, ZP);
+	optable_assign(0x35, "AND", 2, 4, &opcode_and, ZPX);
+	optable_assign(0x2d, "AND", 3, 4, &opcode_and, ABS);
+	optable_assign(0x3d, "AND", 3, 4, &opcode_and, ABSX);
+	optable_assign(0x39, "AND", 3, 4, &opcode_and, ABSY);
+	optable_assign(0x21, "AND", 2, 6, &opcode_and, INDX);
+	optable_assign(0x31, "AND", 2, 5, &opcode_and, INDY);
+
+	optable_assign(0xca, "DEX", 1, 2, &opcode_dex, NONE);
+	optable_assign(0x88, "DEY", 1, 2, &opcode_dey, NONE);
 
 	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
 	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
@@ -52,6 +44,7 @@ static void optable_generator() {
 	optable_assign(0x9a, "TXS", 1, 2, &opcode_txs, NONE);
 
 	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
+	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
 
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
 	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
@@ -94,6 +87,10 @@ static void optable_generator() {
 
 cpu_t *cpu_init() {
 	cpu_t *cpu = (cpu_t *) malloc(sizeof(cpu_t));
+	if (cpu == NULL) {
+		LOG_ERROR("Cannot initialize CPU\n");
+		return NULL;
+	}
 
 	cpu->a = 0;
 	cpu->x = 0;
@@ -104,6 +101,8 @@ cpu_t *cpu_init() {
 	cpu->sr = 0;
 
 	optable_generator();
+
+	LOG_INFO("CPU initialized successfully!");
 
 	return cpu;
 }
@@ -154,6 +153,10 @@ void cpu_run(cpu_t *cpu) {
 
 		opcode_t opcode = optable[code];
 		if (code == 0x00) break;
+		else if (opcode.func == NULL) {
+			LOG_ERROR("Unknown opcode: 0x%hhx\n", opcode);
+			break;
+		}
 		else {
 			opcode.func(cpu, opcode.mode);
 		}
@@ -178,24 +181,6 @@ void cpu_regdump(cpu_t *cpu) {
 
 void cpu_free(cpu_t *cpu) {
 	free(cpu);
-}
-
-static void update_zero_and_negative_flags(cpu_t *cpu, u8 result) {
-	// Zero flag: 0b0000_0010
-	if (result == 0) {
-		cpu->sr |= 0x2; 
-	}
-	else {
-		cpu->sr &= 0xFD;
-	}
-
-	// Negative flag: 0b1000_0000
-	if ((result & 0x80) != 0) {
-		cpu->sr |= 0x80;
-	}
-	else {
-		cpu->sr &= 0x7F;
-	}
 }
 
 static void set_flag(cpu_t *cpu, bool v, u8 flag) {
@@ -260,99 +245,119 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 	return -1;
 }
 
-static void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	u8 value = cpu_mem_read(cpu, addr);
+	cpu->a &= value;
+}
+
+void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->x--;
+
+	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
+	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
+}
+
+void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->y--;
+
+	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
+	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
+}
+
+void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	u8 value = cpu_mem_read(cpu, addr);
 
 	cpu->a = value;
-	// update_zero_and_negative_flags(cpu, cpu->a);
 	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->a & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	u8 value = cpu_mem_read(cpu, addr);
 
 	cpu->x = value;
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	u8 value = cpu_mem_read(cpu, addr);
 
 	cpu->y = value;
-	// update_zero_and_negative_flags(cpu, cpu->y);
 	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x = cpu->a;
 
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->y = cpu->a;
 
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->a = cpu->x;
 
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->a & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->y = cpu->a;
 
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x = cpu->sp;
 
 	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->sp = cpu->x;
 }
 
-static void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->x++;
 
-	// update_zero_and_negative_flags(cpu, cpu->x);
 	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
 	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
 }
 
-static void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->y++;
+
+	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
+	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
+
+}
+
+void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	cpu_mem_write(cpu, addr, cpu->a);
 }
 
-static void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	cpu_mem_write(cpu, addr, cpu->x);
 	
 }
 
-static void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	cpu_mem_write(cpu, addr, cpu->y);
 
