@@ -138,6 +138,11 @@ void opcode_ora(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_bit(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Arithmetic
+void opcode_adc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sbc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cmp(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cpx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cpy(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Increments & Decrements
 void opcode_inc(cpu_t *cpu, enum addressing_mode_t addr_mode);
