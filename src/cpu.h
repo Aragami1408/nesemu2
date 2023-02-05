@@ -2,11 +2,11 @@
 #define CPU_H
 
 #include "types.h"
-#include "addr_mode.h"
 
 #include "logger.h"
 
 #define MEMORY_MAX 0xFFFF
+#define STACK 0x100
 
 typedef struct cpu cpu_t;
 typedef struct opcode opcode_t;
@@ -20,6 +20,32 @@ typedef struct opcode opcode_t;
 #define SF_ZERO 		 1 << 1
 #define SF_CARRY 		 1 << 0
 
+enum addressing_mode_t {
+	// Accumulator
+	ACC,
+
+	// Immediate
+	IMM,
+
+	// Zero Page
+	ZP,
+	ZPX,
+	ZPY,
+
+	// Absolute
+	ABS,
+	ABSX,
+	ABSY,
+
+	// Indirect
+	INDX,
+	INDY,
+
+	// None Addressing
+	NONE
+};
+
+
 cpu_t *cpu_init();
 
 u8 cpu_mem_read(cpu_t *cpu, u16 addr);
@@ -27,6 +53,13 @@ void cpu_mem_write(cpu_t *cpu, u16 addr, u8 data);
 
 u16 cpu_mem_read_u16(cpu_t *cpu, u16 pos);
 void cpu_mem_write_u16(cpu_t *cpu, u16 pos, u16 data);
+
+void cpu_stack_push(cpu_t *cpu, u8 data);
+u8 cpu_stack_pop(cpu_t *cpu);
+
+void cpu_stack_push_u16(cpu_t *cpu, u16 data);
+u16 cpu_stack_pop_u16(cpu_t *cpu);
+
 
 void cpu_reset(cpu_t *cpu);
 
@@ -46,7 +79,7 @@ struct cpu {
 	u8 y;			// Register Y
 
 	u16 pc;			// Program Counter
-	u16 sp; 		// Stack Pointer					
+	u8 sp; 			// Stack Pointer					
 	u8 sr; 			// Status Register
 
 	u8 memory[MEMORY_MAX];
@@ -64,27 +97,40 @@ struct opcode {
 	enum addressing_mode_t mode;
 };
 
+// Logical
 void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_eor(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_ora(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bit(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
+// Increments & Decrements
+void opcode_inc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dec(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
-void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
+// Shifts
+void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
+// Load/Store Operations
 void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
 void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
+// Register Transfers
 void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+// Stack Operations
 void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_pha(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 #endif

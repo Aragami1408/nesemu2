@@ -6,8 +6,6 @@
 #include <string.h>
 
 // CPU UTILS
-static void set_flag(cpu_t *cpu, bool v, u8 flag);
-static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 
 static opcode_t optable[0xFF + 1];
 
@@ -33,8 +31,45 @@ static void optable_generator() {
 	optable_assign(0x21, "AND", 2, 6, &opcode_and, INDX);
 	optable_assign(0x31, "AND", 2, 5, &opcode_and, INDY);
 
+	optable_assign(0x49, "EOR", 2, 2, &opcode_eor, IMM);
+	optable_assign(0x45, "EOR", 2, 3, &opcode_eor, ZP);
+	optable_assign(0x55, "EOR", 2, 4, &opcode_eor, ZPX);
+	optable_assign(0x4d, "EOR", 3, 4, &opcode_eor, ABS);
+	optable_assign(0x5d, "EOR", 3, 4, &opcode_eor, ABSX);
+	optable_assign(0x59, "EOR", 3, 4, &opcode_eor, ABSY);
+	optable_assign(0x41, "EOR", 2, 6, &opcode_eor, INDX);
+	optable_assign(0x51, "EOR", 2, 5, &opcode_eor, ABSY);
+
+	optable_assign(0x09, "ORA", 2, 2, &opcode_ora, IMM);
+	optable_assign(0x05, "ORA", 2, 3, &opcode_ora, ZP);
+	optable_assign(0x15, "ORA", 2, 4, &opcode_ora, ZPX);
+	optable_assign(0x0d, "ORA", 3, 4, &opcode_ora, ABS);
+	optable_assign(0x1d, "ORA", 3, 4, &opcode_ora, ABSX);
+	optable_assign(0x19, "ORA", 3, 4, &opcode_ora, ABSY);
+	optable_assign(0x01, "ORA", 2, 6, &opcode_ora, INDX);
+	optable_assign(0x11, "ORA", 2, 5, &opcode_ora, INDY);
+
+	optable_assign(0x24, "BIT", 2, 3, &opcode_bit, ZP);
+	optable_assign(0x2c, "BIT", 3, 4, &opcode_bit, ABS);
+
+	optable_assign(0xe6, "INC", 2, 5, &opcode_inc, ZP);
+	optable_assign(0xf6, "INC", 2, 6, &opcode_inc, ZPX);
+	optable_assign(0xee, "INC", 3, 6, &opcode_inc, ABS);
+	optable_assign(0xfe, "INC", 3, 7, &opcode_inc, ABSX);
+	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
+	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
+	optable_assign(0xc6, "DEC", 2, 5, &opcode_dec, ZP);
+	optable_assign(0xd6, "DEC", 2, 6, &opcode_dec, ZPX);
+	optable_assign(0xce, "DEC", 3, 6, &opcode_dec, ABS);
+	optable_assign(0xde, "DEC", 3, 7, &opcode_dec, ABSX);
 	optable_assign(0xca, "DEX", 1, 2, &opcode_dex, NONE);
 	optable_assign(0x88, "DEY", 1, 2, &opcode_dey, NONE);
+
+	optable_assign(0x0a, "ASL", 1, 2, &opcode_asl, ACC);
+	optable_assign(0x06, "ASL", 2, 5, &opcode_asl, ZP);
+	optable_assign(0x16, "ASL", 2, 6, &opcode_asl, ZPX);
+	optable_assign(0x0e, "ASL", 3, 6, &opcode_asl, ABS);
+	optable_assign(0x1e, "ASL", 3, 7, &opcode_asl, ABSX);
 
 	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
 	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
@@ -43,8 +78,6 @@ static void optable_generator() {
 	optable_assign(0xba, "TSX", 1, 2, &opcode_tsx, NONE);
 	optable_assign(0x9a, "TXS", 1, 2, &opcode_txs, NONE);
 
-	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
-	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
 
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
 	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
@@ -61,11 +94,11 @@ static void optable_generator() {
 	optable_assign(0xae, "LDX", 3, 4, &opcode_ldx, ABS);
 	optable_assign(0xbe, "LDX", 3, 4, &opcode_ldx, ABSY);
 
-	optable_assign(0xa0, "LDY", 2, 2, &opcode_ldx, IMM);
-	optable_assign(0xa4, "LDY", 2, 3, &opcode_ldx, ZP);
-	optable_assign(0xb4, "LDY", 2, 4, &opcode_ldx, ZPX);
-	optable_assign(0xac, "LDY", 3, 4, &opcode_ldx, ABS);
-	optable_assign(0xbc, "LDY", 3, 4, &opcode_ldx, ABSY);
+	optable_assign(0xa0, "LDY", 2, 2, &opcode_ldy, IMM);
+	optable_assign(0xa4, "LDY", 2, 3, &opcode_ldy, ZP);
+	optable_assign(0xb4, "LDY", 2, 4, &opcode_ldy, ZPX);
+	optable_assign(0xac, "LDY", 3, 4, &opcode_ldy, ABS);
+	optable_assign(0xbc, "LDY", 3, 4, &opcode_ldy, ABSY);
 	
 	optable_assign(0x85, "STA", 2, 3, &opcode_sta, ZP);
 	optable_assign(0x95, "STA", 2, 4, &opcode_sta, ZPX);
@@ -102,7 +135,7 @@ cpu_t *cpu_init() {
 
 	optable_generator();
 
-	LOG_INFO("CPU initialized successfully!");
+	LOG_INFO("CPU initialized successfully!\n");
 
 	return cpu;
 }
@@ -127,6 +160,30 @@ void cpu_mem_write_u16(cpu_t *cpu, u16 pos, u16 data) {
 	u8 lo = data & 0xff;
 	cpu_mem_write(cpu, pos, lo);
 	cpu_mem_write(cpu, pos + 1, hi);
+}
+
+void cpu_stack_push(cpu_t *cpu, u8 data) {
+	cpu_mem_write(cpu, (STACK) + cpu->sp, data);
+	cpu->sp -= 1;
+}
+
+u8 cpu_stack_pop(cpu_t *cpu) {
+	cpu->sp += 1;
+	return cpu_mem_read(cpu, (STACK) + cpu->sp);
+}
+
+void cpu_stack_push_u16(cpu_t *cpu, u16 data) {
+	u8 hi = data >> 8;
+	u8 lo = data & 0xff;
+	cpu_stack_push(cpu, hi);
+	cpu_stack_push(cpu, lo);
+}
+
+u16 cpu_stack_pop_u16(cpu_t *cpu) {
+	u16 lo = cpu_stack_pop(cpu);
+	u16 hi = cpu_stack_pop(cpu);
+
+	return hi << 8 | lo;
 }
 
 void cpu_reset(cpu_t *cpu) {
@@ -182,184 +239,3 @@ void cpu_regdump(cpu_t *cpu) {
 void cpu_free(cpu_t *cpu) {
 	free(cpu);
 }
-
-static void set_flag(cpu_t *cpu, bool v, u8 flag) {
-	if (v) cpu->sr |= flag;
-	else cpu->sr &= ~flag;
-}
-
-static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
-	switch (am) {
-		case IMM:
-			return cpu->pc;	
-			break;
-
-		case ZP:
-			return (u16) cpu_mem_read(cpu, cpu->pc);
-			break;
-		case ZPX: {
-			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			return (u16) pos + cpu->x;
-		} break;
-		case ZPY: {
-			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			return (u16) pos + cpu->y;
-		} break;
-
-		case ABS:
-			return cpu_mem_read_u16(cpu, cpu->pc);
-			break;
-		case ABSX: {
-			u16 pos = cpu_mem_read_u16(cpu, cpu->pc);
-			return pos + (u16) cpu->x;
-		} break;
-		case ABSY: {
-			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			return pos + (u16) cpu->y;
-		} break;
-
-		case INDX: {
-			u8 pos = cpu_mem_read(cpu, cpu->pc);		
-
-			u8 ptr = pos + cpu->x;
-			u8 lo = cpu_mem_read(cpu, (u16) ptr);
-			u8 hi = cpu_mem_read(cpu, (u16) ptr + 1);
-			return ((u16) hi) << 8 | ((u16) lo);
-		} break;
-
-		case INDY: {
-			u8 pos = cpu_mem_read(cpu, cpu->pc);		
-
-			u8 lo = cpu_mem_read(cpu, (u16) pos);
-			u8 hi = cpu_mem_read(cpu, (u16) pos + 1);
-			u16 deref_pos = ((u16) hi) << 8 | ((u16) lo);
-			return deref_pos + (u16) cpu->y;
-
-		} break;
-
-		default: {
-			printf("Addressing Mode not supported\n");
-		} break;
-	}
-
-	return -1;
-}
-
-void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	u8 value = cpu_mem_read(cpu, addr);
-	cpu->a &= value;
-}
-
-void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->x--;
-
-	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
-}
-
-void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->y--;
-
-	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
-}
-
-void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	u8 value = cpu_mem_read(cpu, addr);
-
-	cpu->a = value;
-	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->a & 0x80, SF_NEGATIVE);
-}
-
-void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	u8 value = cpu_mem_read(cpu, addr);
-
-	cpu->x = value;
-	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
-}
-
-void opcode_ldy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	u8 value = cpu_mem_read(cpu, addr);
-
-	cpu->y = value;
-	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
-}
-
-void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->x = cpu->a;
-
-	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
-}
-
-void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->y = cpu->a;
-
-	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
-}
-
-void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->a = cpu->x;
-
-	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->a & 0x80, SF_NEGATIVE);
-}
-
-void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->y = cpu->a;
-
-	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
-}
-
-void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->x = cpu->sp;
-
-	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
-}
-
-void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->sp = cpu->x;
-}
-
-void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->x++;
-
-	set_flag(cpu, cpu->x == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->x & 0x80, SF_NEGATIVE);
-}
-
-void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->y++;
-
-	set_flag(cpu, cpu->y == 0x00, SF_ZERO);
-	set_flag(cpu, cpu->y & 0x80, SF_NEGATIVE);
-
-}
-
-void opcode_sta(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	cpu_mem_write(cpu, addr, cpu->a);
-}
-
-void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	cpu_mem_write(cpu, addr, cpu->x);
-	
-}
-
-void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	u16 addr = get_operand_address(cpu, addr_mode);
-	cpu_mem_write(cpu, addr, cpu->y);
-
-}
-
