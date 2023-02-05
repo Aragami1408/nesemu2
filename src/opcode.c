@@ -243,10 +243,8 @@ void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 		set_flag(cpu, (cpu->a & 0x40) != 0x0, SF_CARRY);
 		u8 result = cpu->a << 1;
 		cpu->a = result;
-
-		set_flag(cpu, (result & 0x80) != 0x0, SF_NEGATIVE);
-		set_flag(cpu, result == 0x00, SF_ZERO);
-
+		set_flag(cpu, (cpu->a & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, cpu->a == 0x00, SF_ZERO);
 	}
 	else {
 		u16 addr = get_operand_address(cpu, addr_mode);
@@ -259,6 +257,88 @@ void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 		set_flag(cpu, (result & 0x80) != 0x0, SF_NEGATIVE);
 		set_flag(cpu, result == 0x00, SF_ZERO);
 	}
+}
+
+void opcode_lsr(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	if (addr_mode == ACC) {
+
+		set_flag(cpu, (cpu->a & 0x40) != 0x0, SF_CARRY);
+		u8 result = cpu->a >> 1;
+		cpu->a = result;
+		set_flag(cpu, (cpu->a & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, cpu->a == 0x00, SF_ZERO);
+	}
+	else {
+		u16 addr = get_operand_address(cpu, addr_mode);
+		u8 value = cpu_mem_read(cpu, addr);
+
+		set_flag(cpu, (value & 0x40) != 0x0, SF_CARRY);
+		u8 result = value >> 1;
+		cpu_mem_write(cpu, addr, result);
+
+		set_flag(cpu, (result & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, result == 0x00, SF_ZERO);
+	}
+
+}
+
+void opcode_rol(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	if (addr_mode == ACC) {
+		u8 data = cpu->a;
+		bool old_carry = (cpu->sr & SF_CARRY) != 0x0;
+
+		set_flag(cpu, (data >> 7) == 1, SF_CARRY);
+		data <<= 1;
+		if (old_carry) {
+			data |= 1;
+		}
+		cpu->a = data;
+		set_flag(cpu, (cpu->a & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, cpu->a == 0x00, SF_ZERO);
+	}
+	else {
+		u16 addr = get_operand_address(cpu, addr_mode);
+		u8 data = cpu_mem_read(cpu, addr);
+		bool old_carry = (cpu->sr & SF_CARRY) != 0x0;
+		set_flag(cpu, (data >> 7) == 1, SF_CARRY);
+		data <<= 1;
+		if (old_carry) {
+			data |= 1;
+		}
+		cpu_mem_write(cpu, addr, data);
+		set_flag(cpu, (data & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, data == 0x00, SF_ZERO);	
+	}
+}
+
+void opcode_ror(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	if (addr_mode == ACC) {
+		u8 data = cpu->a;
+		bool old_carry = (cpu->sr & SF_CARRY) != 0x0;
+
+		set_flag(cpu, (data & 1) == 1, SF_CARRY);
+		data >>= 1;
+		if (old_carry) {
+			data |= 0x80;
+		}
+		cpu->a = data;
+		set_flag(cpu, (cpu->a & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, cpu->a == 0x00, SF_ZERO);
+	}
+	else {
+		u16 addr = get_operand_address(cpu, addr_mode);
+		u8 data = cpu_mem_read(cpu, addr);
+		bool old_carry = (cpu->sr & SF_CARRY) != 0x0;
+		set_flag(cpu, (data & 1) == 1, SF_CARRY);
+		data >>= 1;
+		if (old_carry) {
+			data |= 0x80;
+		}
+		cpu_mem_write(cpu, addr, data);
+		set_flag(cpu, (data & 0x80) != 0x0, SF_NEGATIVE);
+		set_flag(cpu, data == 0x00, SF_ZERO);	
+	}
+	
 }
 
 void opcode_pha(cpu_t *cpu, enum addressing_mode_t addr_mode) {
@@ -281,3 +361,4 @@ void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->sr &= ~SF_BREAK;	
 	cpu->sr |= SF_BREAK2;	
 }
+

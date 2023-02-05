@@ -70,6 +70,16 @@ static void optable_generator() {
 	optable_assign(0x16, "ASL", 2, 6, &opcode_asl, ZPX);
 	optable_assign(0x0e, "ASL", 3, 6, &opcode_asl, ABS);
 	optable_assign(0x1e, "ASL", 3, 7, &opcode_asl, ABSX);
+	optable_assign(0x4a, "LSR", 1, 2, &opcode_lsr, ACC);
+	optable_assign(0x46, "LSR", 2, 5, &opcode_lsr, ZP);
+	optable_assign(0x56, "LSR", 2, 6, &opcode_lsr, ZPX);
+	optable_assign(0x4e, "LSR", 3, 6, &opcode_lsr, ABS);
+	optable_assign(0x5e, "LSR", 3, 7, &opcode_lsr, ABSX);
+	optable_assign(0x2a, "ROL", 1, 2, &opcode_rol, ACC);
+	optable_assign(0x26, "ROL", 2, 5, &opcode_lsr, ZP);
+	optable_assign(0x36, "ROL", 2, 6, &opcode_lsr, ZPX);
+	optable_assign(0x2e, "ROL", 3, 6, &opcode_lsr, ABS);
+	optable_assign(0x3e, "ROL", 3, 7, &opcode_lsr, ABSX);
 
 	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
 	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
@@ -90,14 +100,12 @@ static void optable_generator() {
 	optable_assign(0xbd, "LDA", 3, 4, &opcode_lda, ABSX);
 	optable_assign(0xb9, "LDA", 3, 4, &opcode_lda, ABSY);
 	optable_assign(0xa1, "LDA", 2, 6, &opcode_lda, INDX);
-	optable_assign(0xb1, "LDA", 2, 5, &opcode_lda, INDY);
-	
+	optable_assign(0xb1, "LDA", 2, 5, &opcode_lda, INDY);	
 	optable_assign(0xa2, "LDX", 2, 2, &opcode_ldx, IMM);
 	optable_assign(0xa6, "LDX", 2, 3, &opcode_ldx, ZP);
 	optable_assign(0xb6, "LDX", 2, 4, &opcode_ldx, ZPY);
 	optable_assign(0xae, "LDX", 3, 4, &opcode_ldx, ABS);
 	optable_assign(0xbe, "LDX", 3, 4, &opcode_ldx, ABSY);
-
 	optable_assign(0xa0, "LDY", 2, 2, &opcode_ldy, IMM);
 	optable_assign(0xa4, "LDY", 2, 3, &opcode_ldy, ZP);
 	optable_assign(0xb4, "LDY", 2, 4, &opcode_ldy, ZPX);
@@ -111,11 +119,9 @@ static void optable_generator() {
 	optable_assign(0x99, "STA", 3, 5, &opcode_sta, ABSY);
 	optable_assign(0x81, "STA", 2, 6, &opcode_sta, INDX);
 	optable_assign(0x91, "STA", 2, 6, &opcode_sta, INDY);
-
 	optable_assign(0x86, "STX", 2, 3, &opcode_stx, ZP);
 	optable_assign(0x96, "STX", 2, 4, &opcode_stx, ZPY);
 	optable_assign(0x8e, "STX", 3, 4, &opcode_stx, ABS);
-
 	optable_assign(0x84, "STY", 2, 3, &opcode_sty, ZP);
 	optable_assign(0x94, "STY", 2, 4, &opcode_sty, ZPX);
 	optable_assign(0x8c, "STY", 3, 4, &opcode_sty, ABS);

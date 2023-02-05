@@ -149,6 +149,9 @@ void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Shifts
 void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_lsr(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_rol(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_ror(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Jumps & Calls
 
