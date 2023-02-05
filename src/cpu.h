@@ -12,13 +12,25 @@ typedef struct cpu cpu_t;
 typedef struct opcode opcode_t;
 
 // STATUS FLAGS
-#define SF_NEGATIVE 	 1 << 7
-#define SF_OVERFLOW 	 1 << 6
-#define SF_BREAK 		 1 << 4
-#define SF_DECIMAL 	 	 1 << 3
-#define SF_INTERRUPT 	 1 << 2
-#define SF_ZERO 		 1 << 1
-#define SF_CARRY 		 1 << 0
+
+//	7 6 5 4 3 2 1 0
+//	N V _ B D I Z C
+//  | |   | | | | +--- Carry Flag
+//  | |   | | | +----- Zero Flag
+//  | |   | | +------- Interrupt Disable
+//  | |   | +--------- Decimal Mode (not used on NES)
+//  | |   +----------- Break Command
+//  | +--------------- Overflow Flag
+//  +----------------- Negative Flag
+//
+#define SF_NEGATIVE 	 1u << 7
+#define SF_OVERFLOW 	 1u << 6
+#define SF_BREAK2		 1u << 5
+#define SF_BREAK 		 1u << 4
+#define SF_DECIMAL 	 	 1u << 3
+#define SF_INTERRUPT 	 1u << 2
+#define SF_ZERO 		 1u << 1
+#define SF_CARRY 		 1u << 0
 
 enum addressing_mode_t {
 	// Accumulator
@@ -97,23 +109,6 @@ struct opcode {
 	enum addressing_mode_t mode;
 };
 
-// Logical
-void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_eor(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_ora(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_bit(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
-// Increments & Decrements
-void opcode_inc(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_dec(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
-// Shifts
-void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode);
-
 // Load/Store Operations
 void opcode_lda(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_ldx(cpu_t *cpu, enum addressing_mode_t addr_mode);
@@ -132,5 +127,36 @@ void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_pha(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_php(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_pla(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+// Logical
+void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_eor(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_ora(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bit(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+// Arithmetic
+
+// Increments & Decrements
+void opcode_inc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dec(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+// Shifts
+void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode);
+
+// Jumps & Calls
+
+// Branches
+
+// Status Flag Changes
+
+// System Functions
+
 
 #endif

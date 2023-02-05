@@ -262,4 +262,22 @@ void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 }
 
 void opcode_pha(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_stack_push(cpu, cpu->a);
+}
+
+void opcode_php(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u8 flags = cpu->sr;	
+	flags |= SF_BREAK | SF_BREAK2;
+	cpu_stack_push(cpu, flags);
+}
+
+void opcode_pla(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u8 data = cpu_stack_pop(cpu);
+	cpu->a = data;
+}
+
+void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->sr = cpu_stack_pop(cpu);
+	cpu->sr &= ~SF_BREAK;	
+	cpu->sr |= SF_BREAK2;	
 }

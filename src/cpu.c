@@ -75,9 +75,13 @@ static void optable_generator() {
 	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
 	optable_assign(0x8a, "TXA", 1, 2, &opcode_txa, NONE);	
 	optable_assign(0x98, "TYA", 1, 2, &opcode_tya, NONE);	
+
 	optable_assign(0xba, "TSX", 1, 2, &opcode_tsx, NONE);
 	optable_assign(0x9a, "TXS", 1, 2, &opcode_txs, NONE);
-
+	optable_assign(0x48, "PHA", 1, 3, &opcode_pha, NONE);
+	optable_assign(0x08, "PHP", 1, 3, &opcode_php, NONE);
+	optable_assign(0x68, "PLA", 1, 4, &opcode_pla, NONE);
+	optable_assign(0x28, "PLP", 1, 4, &opcode_plp, NONE);
 
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
 	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
