@@ -50,6 +50,7 @@ enum addressing_mode_t {
 	ABSY,
 
 	// Indirect
+	IND,
 	INDX,
 	INDY,
 
@@ -159,6 +160,9 @@ void opcode_rol(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_ror(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Jumps & Calls
+void opcode_jmp(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_jsr(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_rts(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Branches
 

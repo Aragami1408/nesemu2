@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options(
-	-Wall -Werror -Wno-error=maybe-uninitialized
+	-Wall -Wextra -Werror -pedantic
 	$<$<CONFIG:RELEASE>:-O2>
 	$<$<CONFIG:DEBUG>:-O0>
 	$<$<CONFIG:DEBUG>:-ggdb3>
@@ -56,7 +56,3 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(nesemu2_test)
-
-
-
-

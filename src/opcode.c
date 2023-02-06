@@ -362,3 +362,37 @@ void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->sr |= SF_BREAK2;	
 }
 
+void opcode_jmp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	if (addr_mode == ABS) {
+		u16 mem_address = cpu_mem_read_u16(cpu, cpu->pc);
+		cpu->pc = mem_address;
+	}
+	else if (addr_mode == IND) {
+		u16 mem_address = cpu_mem_read_u16(cpu, cpu->pc);
+		
+		u16 indirect_ref;
+		if ((mem_address & 0x00ff) == 0x00ff) {
+			u8 lo = cpu_mem_read(cpu, mem_address);
+			u8 hi = cpu_mem_read(cpu, mem_address & 0xff00);
+			indirect_ref = hi << 8 | lo;
+		}
+		else {
+			indirect_ref = cpu_mem_read_u16(cpu, mem_address);
+		}
+		
+		cpu->pc = indirect_ref;
+	}
+	else {
+
+	}
+}
+
+void opcode_jsr(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_stack_push_u16(cpu, cpu->pc + 2 - 1);
+	u16 target_address = cpu_mem_read_u16(cpu, cpu->pc);
+	cpu->pc = target_address;
+}
+
+void opcode_rts(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->pc = cpu_stack_pop_u16(cpu) + 1;
+}

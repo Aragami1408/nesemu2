@@ -93,6 +93,11 @@ static void optable_generator() {
 	optable_assign(0x68, "PLA", 1, 4, &opcode_pla, NONE);
 	optable_assign(0x28, "PLP", 1, 4, &opcode_plp, NONE);
 
+	optable_assign(0x4c, "JMP", 3, 3, &opcode_jmp, ABS);
+	optable_assign(0x6c, "JMP", 3, 5, &opcode_jmp, IND);
+	optable_assign(0x20, "JSR", 3, 6, &opcode_jsr, ABS);
+	optable_assign(0x60, "RTS", 1, 6, &opcode_rts, NONE);
+
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
 	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
 	optable_assign(0xb5, "LDA", 2, 4, &opcode_lda, ZPX);
