@@ -19,19 +19,19 @@ add_compile_definitions(
 	)
 
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-include_directories(nesemu2 ${SDL2_INCLUDE_DIRS})
-include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
-include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
+#find_package(SDL2 REQUIRED)
+#find_package(SDL2_image REQUIRED)
+#find_package(SDL2_ttf REQUIRED)
+#include_directories(nesemu2 ${SDL2_INCLUDE_DIRS})
+#include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
+#include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
 
 add_library(cpu src/cpu.c src/opcode.c)
 add_library(utils src/logger.c)
 
 add_executable(nesemu2 src/main.c)
 target_link_libraries(nesemu2
-		${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
+		#${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
 		cpu utils)
 
 # TESTING SECTION
