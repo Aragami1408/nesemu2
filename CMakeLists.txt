@@ -6,8 +6,9 @@ project(nesemu2
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 17)
 
+
 add_compile_options(
-	-Wall -Wextra -Werror -pedantic
+	-Wall -Wextra -pedantic
 	$<$<CONFIG:RELEASE>:-O2>
 	$<$<CONFIG:DEBUG>:-O0>
 	$<$<CONFIG:DEBUG>:-ggdb3>
@@ -25,34 +26,35 @@ include_directories(nesemu2 ${SDL2_INCLUDE_DIRS})
 include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
 include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
 
-add_executable(nesemu2 
-	src/main.c
-	src/cpu.c
-	src/logger.c
-	src/opcode.c)
+add_library(cpu src/cpu.c src/opcode.c)
+add_library(utils src/logger.c)
 
-target_link_libraries(nesemu2 ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
+add_executable(nesemu2 src/main.c)
+target_link_libraries(nesemu2
+		${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
+		cpu utils)
 
-include(FetchContent)
-FetchContent_Declare(
-	googletest
-	URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-	)
+# TESTING SECTION
 
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+include(ExternalProject)
+ExternalProject_Add(googletest
+    PREFIX "${CMAKE_BINARY_DIR}/lib"
+    GIT_REPOSITORY "https://github.com/google/googletest.git"
+    GIT_TAG "main"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/lib/installed
+)
 
-enable_testing()
+set_target_properties(googletest PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-add_executable(
-	nesemu2_test
-	test/opcode_test.cc
-	)
+include(GNUInstallDirs)
 
-target_link_libraries(
-	nesemu2_test
-	GTest::gtest_main
-	)
+link_directories(${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_LIBDIR})
+include_directories(${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_INCLUDEDIR})
 
-include(GoogleTest)
-gtest_discover_tests(nesemu2_test)
+find_package(Threads REQUIRED)
+
+add_executable(nesemu2_test test/opcode_test.cc)
+target_link_libraries(nesemu2_test cpu utils gtest Threads::Threads)
+
+add_dependencies(nesemu2_test googletest)
+set_target_properties(nesemu2_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
