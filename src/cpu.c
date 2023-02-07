@@ -130,6 +130,24 @@ static void optable_generator() {
 	optable_assign(0x20, "JSR", 3, 6, &opcode_jsr, ABS);
 	optable_assign(0x60, "RTS", 1, 6, &opcode_rts, NONE);
 
+	optable_assign(0x90, "BCC", 2, 2, &opcode_bcc, NONE);
+	optable_assign(0xb0, "BCS", 2, 2, &opcode_bcs, NONE);
+	optable_assign(0xf0, "BEQ", 2, 2, &opcode_beq, NONE);
+	optable_assign(0x30, "BMI", 2, 2, &opcode_bmi, NONE);
+	optable_assign(0xd0, "BNE", 2, 2, &opcode_bne, NONE);
+	optable_assign(0x10, "BPL", 2, 2, &opcode_bpl, NONE);
+	optable_assign(0x50, "BVC", 2, 2, &opcode_bvc, NONE);
+	optable_assign(0x70, "BVS", 2, 2, &opcode_bvs, NONE);
+
+	optable_assign(0x18, "CLC", 1, 2, &opcode_clc, NONE);
+	optable_assign(0xd8, "CLD", 1, 2, &opcode_cld, NONE);
+	optable_assign(0x58, "CLI", 1, 2, &opcode_cli, NONE);
+	optable_assign(0xb8, "CLV", 1, 2, &opcode_clv, NONE);
+	optable_assign(0x38, "SEC", 1, 2, &opcode_sec, NONE);
+	optable_assign(0xf8, "SED", 1, 2, &opcode_sed, NONE);
+	optable_assign(0x78, "SEI", 1, 2, &opcode_sei, NONE);
+
+
 	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
 	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
 	optable_assign(0xb5, "LDA", 2, 4, &opcode_lda, ZPX);
@@ -257,6 +275,9 @@ void cpu_run(cpu_t *cpu) {
 
 		opcode_t opcode = optable[code];
 		if (code == 0x00) break;
+		else if (code == 0xea) {
+			// "NOP" means do nothing
+		}
 		else if (opcode.func == NULL) {
 			LOG_ERROR("Unknown opcode: 0x%hhx\n", opcode);
 			break;

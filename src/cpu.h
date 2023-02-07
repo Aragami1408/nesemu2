@@ -167,10 +167,25 @@ void opcode_jsr(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_rts(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Branches
+void opcode_bcc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bcs(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_beq(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bmi(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bne(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bpl(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bvc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bvs(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Status Flag Changes
+void opcode_clc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cld(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cli(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_clv(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sec(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sed(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sei(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // System Functions
-
+void opcode_rti(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 #endif

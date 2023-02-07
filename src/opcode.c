@@ -5,6 +5,7 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 static void set_flag(cpu_t *cpu, bool v, u8 flag);
 static void add_to_reg_a(cpu_t *cpu, u8 data);
 static void compare(cpu_t *cpu, enum addressing_mode_t am, u8 compare_with);
+static void branch(cpu_t *cpu, bool condition);
 
 
 static void set_flag(cpu_t *cpu, bool v, u8 flag) {
@@ -73,7 +74,7 @@ static void add_to_reg_a(cpu_t *cpu, u8 data) {
 	u16 sum = cpu->a + data + (cpu->sr & SF_CARRY) ? 1 : 0;
 	set_flag(cpu, sum > 0xff, SF_CARRY);
 	u8 result = sum;
-	set_flag(cpu, (data ^ result) & (result ^ cpu->a) & 0x80 != 0, SF_OVERFLOW);
+	set_flag(cpu, ((data ^ result) & (result ^ cpu->a) & 0x80) != 0, SF_OVERFLOW);
 
 	cpu->a = result;	
 	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
@@ -87,6 +88,15 @@ static void compare(cpu_t *cpu, enum addressing_mode_t am, u8 compare_with) {
 	set_flag(cpu, data <= compare_with, SF_CARRY);
 	set_flag(cpu, compare_with - data == 0x00, SF_ZERO);
 	set_flag(cpu, ((compare_with - data) & 0x80) != 0x0, SF_NEGATIVE);
+}
+
+static void branch(cpu_t *cpu, bool condition) {
+	if (condition) {
+		i8 jump = (i8) cpu_mem_read(cpu, cpu->pc);
+		u16 jump_addr = cpu->pc + 1 + (u16) jump;
+
+		cpu->pc = jump_addr;
+	}
 }
 
 
@@ -442,4 +452,61 @@ void opcode_cpx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 void opcode_cpy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	compare(cpu, addr_mode, cpu->y);	
+}
+
+void opcode_bcc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_CARRY) == 0x00);
+}
+void opcode_bcs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	
+	cpu_branch(cpu, (cpu->sr & SF_CARRY) != 0x00);
+}
+void opcode_beq(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_ZERO) != 0x00);
+}
+void opcode_bmi(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_NEGATIVE) != 0x00);
+}
+void opcode_bne(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_ZERO) == 0x00);
+}
+void opcode_bpl(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_NEGATIVE) == 0x00);
+}
+void opcode_bvc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_OVERFLOW) == 0x00);
+}
+void opcode_bvs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu_branch(cpu, (cpu->sr & SF_OVERFLOW) != 0x00);
+}
+
+void opcode_clc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, false, SF_CARRY);
+}
+void opcode_cld(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, false, SF_DECIMAL);
+}
+void opcode_cli(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, false, SF_INTERRUPT);
+
+}
+void opcode_clv(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, false, SF_OVERFLOW);
+}
+void opcode_sec(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, true, SF_CARRY);
+}
+void opcode_sed(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, true, SF_DECIMAL);
+}
+void opcode_sei(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	set_flag(cpu, true, SF_INTERRUPT);
+}
+
+void opcode_rti(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	cpu->sr = cpu_stack_pop(cpu);
+	set_flag(cpu, false, SF_BREAK);
+	set_flag(cpu, true, SF_BREAK2);
+
+	cpu->pc = cpu_stack_pop_u16(cpu);
 }

@@ -70,6 +70,12 @@ TEST(opcode_test, test_register_transfers) {
 	cpu_free(cpu);
 }
 
+TEST(opcode_test, test_logical_bitwise) {
+	cpu_t *cpu = cpu_init();
+
+	cpu_free(cpu);
+}
+
 int main(int argc, char **argv) {
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
