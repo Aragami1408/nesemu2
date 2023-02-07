@@ -1,5 +1,4 @@
 #include "logger.h"
-#include "asserts.h"
 
 bool logger_initbool() {
     // TODO: create a log file
@@ -44,6 +43,3 @@ void logger_output(log_level_t level, const char *message, ...) {
 	va_end(args);
 }
 
-void report_assertion_failure(const char *expression, const char *message, const char *file, i32 line) {
-	logger_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s', in file: %s, line: %d\n", expression, message, file, line);
-}
