@@ -52,6 +52,38 @@ static void optable_generator() {
 	optable_assign(0x24, "BIT", 2, 3, &opcode_bit, ZP);
 	optable_assign(0x2c, "BIT", 3, 4, &opcode_bit, ABS);
 
+	optable_assign(0x69, "ADC", 2, 2, &opcode_adc, IMM);
+	optable_assign(0x65, "ADC", 2, 3, &opcode_adc, ZP);
+	optable_assign(0x75, "ADC", 2, 4, &opcode_adc, ZPX);
+	optable_assign(0x6d, "ADC", 3, 4, &opcode_adc, ABS);
+	optable_assign(0x7d, "ADC", 3, 4, &opcode_adc, ABSX);
+	optable_assign(0x79, "ADC", 3, 4, &opcode_adc, ABSY);
+	optable_assign(0x61, "ADC", 2, 6, &opcode_adc, INDX);
+	optable_assign(0x71, "ADC", 2, 5, &opcode_adc, INDY);
+	optable_assign(0xe9, "SBC", 2, 2, &opcode_sbc, IMM);
+	optable_assign(0xe5, "SBC", 2, 3, &opcode_sbc, ZP);
+	optable_assign(0xf5, "SBC", 2, 4, &opcode_sbc, ZPX);
+	optable_assign(0xed, "SBC", 3, 4, &opcode_sbc, ABS);
+	optable_assign(0xfd, "SBC", 3, 4, &opcode_sbc, ABSX);
+	optable_assign(0xf9, "SBC", 3, 4, &opcode_sbc, ABSY);
+	optable_assign(0xe1, "SBC", 2, 6, &opcode_sbc, INDX);
+	optable_assign(0xf1, "SBC", 2, 5, &opcode_sbc, INDY);
+	optable_assign(0xc9, "CMP", 2, 2, &opcode_cmp, IMM);
+	optable_assign(0xc5, "CMP", 2, 3, &opcode_cmp, ZP);
+	optable_assign(0xd5, "CMP", 2, 4, &opcode_cmp, ZPX);
+	optable_assign(0xcd, "CMP", 3, 4, &opcode_cmp, ABS);
+	optable_assign(0xdd, "CMP", 3, 4, &opcode_cmp, ABSX);
+	optable_assign(0xd9, "CMP", 3, 4, &opcode_cmp, ABSY);
+	optable_assign(0xc1, "CMP", 2, 6, &opcode_cmp, INDX);
+	optable_assign(0xd1, "CMP", 2, 5, &opcode_cmp, INDY);
+	optable_assign(0xe0, "CPX", 2, 2, &opcode_cpx, IMM);
+	optable_assign(0xe4, "CPX", 2, 3, &opcode_cpx, ZP);
+	optable_assign(0xec, "CPX", 3, 4, &opcode_cpx, ABS);
+	optable_assign(0xc0, "CPY", 2, 2, &opcode_cpy, IMM);
+	optable_assign(0xc4, "CPY", 2, 3, &opcode_cpy, ZP);
+	optable_assign(0xcc, "CPY", 3, 4, &opcode_cpy, ABS);
+
+
 	optable_assign(0xe6, "INC", 2, 5, &opcode_inc, ZP);
 	optable_assign(0xf6, "INC", 2, 6, &opcode_inc, ZPX);
 	optable_assign(0xee, "INC", 3, 6, &opcode_inc, ABS);

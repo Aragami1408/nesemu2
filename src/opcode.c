@@ -3,6 +3,9 @@
 
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 static void set_flag(cpu_t *cpu, bool v, u8 flag);
+static void add_to_reg_a(cpu_t *cpu, u8 data);
+static void compare(cpu_t *cpu, enum addressing_mode_t am, u8 compare_with);
+
 
 static void set_flag(cpu_t *cpu, bool v, u8 flag) {
 	if (v) cpu->sr |= flag;
@@ -64,6 +67,26 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 	}
 
 	return -1;
+}
+
+static void add_to_reg_a(cpu_t *cpu, u8 data) {
+	u16 sum = cpu->a + data + (cpu->sr & SF_CARRY) ? 1 : 0;
+	set_flag(cpu, sum > 0xff, SF_CARRY);
+	u8 result = sum;
+	set_flag(cpu, (data ^ result) & (result ^ cpu->a) & 0x80 != 0, SF_OVERFLOW);
+
+	cpu->a = result;	
+	set_flag(cpu, cpu->a == 0x00, SF_ZERO);
+	set_flag(cpu, (cpu->a & 0x80) != 0x0, SF_NEGATIVE);
+}
+
+static void compare(cpu_t *cpu, enum addressing_mode_t am, u8 compare_with) {
+	u16 addr = get_operand_address(cpu, am);
+	u8 data = cpu_mem_read(cpu, addr);
+	
+	set_flag(cpu, data <= compare_with, SF_CARRY);
+	set_flag(cpu, compare_with - data == 0x00, SF_ZERO);
+	set_flag(cpu, ((compare_with - data) & 0x80) != 0x0, SF_NEGATIVE);
 }
 
 
@@ -395,4 +418,28 @@ void opcode_jsr(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 void opcode_rts(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->pc = cpu_stack_pop_u16(cpu) + 1;
+}
+
+void opcode_adc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	u8 value = cpu_mem_read(cpu, addr);
+	add_to_reg_a(cpu, value);
+}
+
+void opcode_sbc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	u16 addr = get_operand_address(cpu, addr_mode);
+	u8 value = cpu_mem_read(cpu, addr);
+	add_to_reg_a(cpu,(-((i8) value))-1);	
+}
+
+void opcode_cmp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	compare(cpu, addr_mode, cpu->a);	
+}
+
+void opcode_cpx(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	compare(cpu, addr_mode, cpu->x);	
+}
+
+void opcode_cpy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
+	compare(cpu, addr_mode, cpu->y);	
 }

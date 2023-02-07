@@ -73,6 +73,8 @@ u8 cpu_stack_pop(cpu_t *cpu);
 void cpu_stack_push_u16(cpu_t *cpu, u16 data);
 u16 cpu_stack_pop_u16(cpu_t *cpu);
 
+void cpu_branch(cpu_t *cpu, bool condition);
+void cpu_compare(cpu_t *cpu, enum addressing_mode_t addr_mode, u8 cmp);
 
 void cpu_reset(cpu_t *cpu);
 
