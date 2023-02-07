@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 add_compile_options(
-	-Wall -Wextra -pedantic
+	-Wall -Wextra -Wno-unused-parameter -pedantic
 	$<$<CONFIG:RELEASE>:-O2>
 	$<$<CONFIG:DEBUG>:-O0>
 	$<$<CONFIG:DEBUG>:-ggdb3>
@@ -26,13 +26,12 @@ add_compile_definitions(
 #include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
 #include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
 
-add_library(cpu src/cpu.c src/opcode.c)
-add_library(utils src/logger.c)
+add_library(nesemu2_lib src/cpu.c src/opcode.c src/logger.c)
 
 add_executable(nesemu2 src/main.c)
 target_link_libraries(nesemu2
 		#${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
-		cpu utils)
+		nesemu2_lib)
 
 # TESTING SECTION
 
@@ -54,7 +53,7 @@ include_directories(${CMAKE_BINARY_DIR}/lib/installed/${CMAKE_INSTALL_INCLUDEDIR
 find_package(Threads REQUIRED)
 
 add_executable(nesemu2_test test/opcode_test.cc)
-target_link_libraries(nesemu2_test cpu utils gtest Threads::Threads)
+target_link_libraries(nesemu2_test nesemu2_lib gtest Threads::Threads)
 
 add_dependencies(nesemu2_test googletest)
 set_target_properties(nesemu2_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
