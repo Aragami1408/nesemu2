@@ -455,29 +455,29 @@ void opcode_cpy(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 }
 
 void opcode_bcc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_CARRY) == 0x00);
+	branch(cpu, (cpu->sr & SF_CARRY) == 0x00);
 }
 void opcode_bcs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	
-	cpu_branch(cpu, (cpu->sr & SF_CARRY) != 0x00);
+	branch(cpu, (cpu->sr & SF_CARRY) != 0x00);
 }
 void opcode_beq(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_ZERO) != 0x00);
+	branch(cpu, (cpu->sr & SF_ZERO) != 0x00);
 }
 void opcode_bmi(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_NEGATIVE) != 0x00);
+	branch(cpu, (cpu->sr & SF_NEGATIVE) != 0x00);
 }
 void opcode_bne(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_ZERO) == 0x00);
+	branch(cpu, (cpu->sr & SF_ZERO) == 0x00);
 }
 void opcode_bpl(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_NEGATIVE) == 0x00);
+	branch(cpu, (cpu->sr & SF_NEGATIVE) == 0x00);
 }
 void opcode_bvc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_OVERFLOW) == 0x00);
+	branch(cpu, (cpu->sr & SF_OVERFLOW) == 0x00);
 }
 void opcode_bvs(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu_branch(cpu, (cpu->sr & SF_OVERFLOW) != 0x00);
+	branch(cpu, (cpu->sr & SF_OVERFLOW) != 0x00);
 }
 
 void opcode_clc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
