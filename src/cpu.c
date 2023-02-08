@@ -197,7 +197,6 @@ static void optable_generator() {
 cpu_t *cpu_init() {
 	cpu_t *cpu = (cpu_t *) malloc(sizeof(cpu_t));
 	if (cpu == NULL) {
-		LOG_ERROR("Cannot initialize CPU\n");
 		return NULL;
 	}
 
@@ -211,10 +210,7 @@ cpu_t *cpu_init() {
 
 	for (u16 i = 0; i < MEMORY_MAX; i++) cpu->memory[i] = 0;
 	
-
 	optable_generator();
-
-	LOG_INFO("CPU initialized successfully!\n");
 
 	return cpu;
 }
@@ -319,7 +315,7 @@ void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 
 void cpu_load_and_run(cpu_t *cpu, u8 *program, int size) {
 	cpu_load(cpu, program, size);
-	cpu_reset(cpu);
+	cpu->pc = cpu_mem_read_u16(cpu, 0xfffc);
 	cpu_run(cpu);
 }
 
