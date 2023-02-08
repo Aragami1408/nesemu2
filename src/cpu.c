@@ -20,8 +20,45 @@ static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcod
 }
 
 static void optable_generator() {
-	optable_assign(0x00, "BRK", 2, 2, NULL, NONE); // Don't worry. opcode_func of BRK is already handled in cpu_run's loop already
-												   //
+	optable_assign(0x00, "BRK", 1, 7, NULL, NONE); // Don't worry. opcode_func of BRK is already handled in cpu_run's loop already
+	optable_assign(0xea, "NOP", 1, 2, NULL, NONE);
+
+	optable_assign(0x69, "ADC", 2, 2, &opcode_adc, IMM);
+	optable_assign(0x65, "ADC", 2, 3, &opcode_adc, ZP);
+	optable_assign(0x75, "ADC", 2, 4, &opcode_adc, ZPX);
+	optable_assign(0x6d, "ADC", 3, 4, &opcode_adc, ABS);
+	optable_assign(0x7d, "ADC", 3, 4, &opcode_adc, ABSX);
+	optable_assign(0x79, "ADC", 3, 4, &opcode_adc, ABSY);
+	optable_assign(0x61, "ADC", 2, 6, &opcode_adc, INDX);
+	optable_assign(0x71, "ADC", 2, 5, &opcode_adc, INDY);
+
+	optable_assign(0xe9, "SBC", 2, 2, &opcode_sbc, IMM);
+	optable_assign(0xe5, "SBC", 2, 3, &opcode_sbc, ZP);
+	optable_assign(0xf5, "SBC", 2, 4, &opcode_sbc, ZPX);
+	optable_assign(0xed, "SBC", 3, 4, &opcode_sbc, ABS);
+	optable_assign(0xfd, "SBC", 3, 4, &opcode_sbc, ABSX);
+	optable_assign(0xf9, "SBC", 3, 4, &opcode_sbc, ABSY);
+	optable_assign(0xe1, "SBC", 2, 6, &opcode_sbc, INDX);
+	optable_assign(0xf1, "SBC", 2, 5, &opcode_sbc, INDY);
+
+	optable_assign(0xc9, "CMP", 2, 2, &opcode_cmp, IMM);
+	optable_assign(0xc5, "CMP", 2, 3, &opcode_cmp, ZP);
+	optable_assign(0xd5, "CMP", 2, 4, &opcode_cmp, ZPX);
+	optable_assign(0xcd, "CMP", 3, 4, &opcode_cmp, ABS);
+	optable_assign(0xdd, "CMP", 3, 4, &opcode_cmp, ABSX);
+	optable_assign(0xd9, "CMP", 3, 4, &opcode_cmp, ABSY);
+	optable_assign(0xc1, "CMP", 2, 6, &opcode_cmp, INDX);
+	optable_assign(0xd1, "CMP", 2, 5, &opcode_cmp, INDY);
+
+	optable_assign(0xe0, "CPX", 2, 2, &opcode_cpx, IMM);
+	optable_assign(0xe4, "CPX", 2, 3, &opcode_cpx, ZP);
+	optable_assign(0xec, "CPX", 3, 4, &opcode_cpx, ABS);
+
+	optable_assign(0xc0, "CPY", 2, 2, &opcode_cpy, IMM);
+	optable_assign(0xc4, "CPY", 2, 3, &opcode_cpy, ZP);
+	optable_assign(0xcc, "CPY", 3, 4, &opcode_cpy, ABS);
+
+	
 	optable_assign(0x29, "AND", 2, 2, &opcode_and, IMM);
 	optable_assign(0x25, "AND", 2, 3, &opcode_and, ZP);
 	optable_assign(0x35, "AND", 2, 4, &opcode_and, ZPX);
@@ -52,48 +89,21 @@ static void optable_generator() {
 	optable_assign(0x24, "BIT", 2, 3, &opcode_bit, ZP);
 	optable_assign(0x2c, "BIT", 3, 4, &opcode_bit, ABS);
 
-	optable_assign(0x69, "ADC", 2, 2, &opcode_adc, IMM);
-	optable_assign(0x65, "ADC", 2, 3, &opcode_adc, ZP);
-	optable_assign(0x75, "ADC", 2, 4, &opcode_adc, ZPX);
-	optable_assign(0x6d, "ADC", 3, 4, &opcode_adc, ABS);
-	optable_assign(0x7d, "ADC", 3, 4, &opcode_adc, ABSX);
-	optable_assign(0x79, "ADC", 3, 4, &opcode_adc, ABSY);
-	optable_assign(0x61, "ADC", 2, 6, &opcode_adc, INDX);
-	optable_assign(0x71, "ADC", 2, 5, &opcode_adc, INDY);
-	optable_assign(0xe9, "SBC", 2, 2, &opcode_sbc, IMM);
-	optable_assign(0xe5, "SBC", 2, 3, &opcode_sbc, ZP);
-	optable_assign(0xf5, "SBC", 2, 4, &opcode_sbc, ZPX);
-	optable_assign(0xed, "SBC", 3, 4, &opcode_sbc, ABS);
-	optable_assign(0xfd, "SBC", 3, 4, &opcode_sbc, ABSX);
-	optable_assign(0xf9, "SBC", 3, 4, &opcode_sbc, ABSY);
-	optable_assign(0xe1, "SBC", 2, 6, &opcode_sbc, INDX);
-	optable_assign(0xf1, "SBC", 2, 5, &opcode_sbc, INDY);
-	optable_assign(0xc9, "CMP", 2, 2, &opcode_cmp, IMM);
-	optable_assign(0xc5, "CMP", 2, 3, &opcode_cmp, ZP);
-	optable_assign(0xd5, "CMP", 2, 4, &opcode_cmp, ZPX);
-	optable_assign(0xcd, "CMP", 3, 4, &opcode_cmp, ABS);
-	optable_assign(0xdd, "CMP", 3, 4, &opcode_cmp, ABSX);
-	optable_assign(0xd9, "CMP", 3, 4, &opcode_cmp, ABSY);
-	optable_assign(0xc1, "CMP", 2, 6, &opcode_cmp, INDX);
-	optable_assign(0xd1, "CMP", 2, 5, &opcode_cmp, INDY);
-	optable_assign(0xe0, "CPX", 2, 2, &opcode_cpx, IMM);
-	optable_assign(0xe4, "CPX", 2, 3, &opcode_cpx, ZP);
-	optable_assign(0xec, "CPX", 3, 4, &opcode_cpx, ABS);
-	optable_assign(0xc0, "CPY", 2, 2, &opcode_cpy, IMM);
-	optable_assign(0xc4, "CPY", 2, 3, &opcode_cpy, ZP);
-	optable_assign(0xcc, "CPY", 3, 4, &opcode_cpy, ABS);
 
 
 	optable_assign(0xe6, "INC", 2, 5, &opcode_inc, ZP);
 	optable_assign(0xf6, "INC", 2, 6, &opcode_inc, ZPX);
 	optable_assign(0xee, "INC", 3, 6, &opcode_inc, ABS);
 	optable_assign(0xfe, "INC", 3, 7, &opcode_inc, ABSX);
+
 	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
 	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
+
 	optable_assign(0xc6, "DEC", 2, 5, &opcode_dec, ZP);
 	optable_assign(0xd6, "DEC", 2, 6, &opcode_dec, ZPX);
 	optable_assign(0xce, "DEC", 3, 6, &opcode_dec, ABS);
 	optable_assign(0xde, "DEC", 3, 7, &opcode_dec, ABSX);
+
 	optable_assign(0xca, "DEX", 1, 2, &opcode_dex, NONE);
 	optable_assign(0x88, "DEY", 1, 2, &opcode_dey, NONE);
 
@@ -127,6 +137,7 @@ static void optable_generator() {
 
 	optable_assign(0x4c, "JMP", 3, 3, &opcode_jmp, ABS);
 	optable_assign(0x6c, "JMP", 3, 5, &opcode_jmp, IND);
+
 	optable_assign(0x20, "JSR", 3, 6, &opcode_jsr, ABS);
 	optable_assign(0x60, "RTS", 1, 6, &opcode_rts, NONE);
 
@@ -195,8 +206,11 @@ cpu_t *cpu_init() {
 	cpu->y = 0;
 
 	cpu->pc = 0;
-	cpu->sp = 0;
-	cpu->sr = 0;
+	cpu->sp = STACK_RESET;
+	cpu->sr = 0b100100;
+
+	for (u16 i = 0; i < MEMORY_MAX; i++) cpu->memory[i] = 0;
+	
 
 	optable_generator();
 
@@ -228,13 +242,13 @@ void cpu_mem_write_u16(cpu_t *cpu, u16 pos, u16 data) {
 }
 
 void cpu_stack_push(cpu_t *cpu, u8 data) {
-	cpu_mem_write(cpu, (STACK) + cpu->sp, data);
+	cpu_mem_write(cpu, (u16)(STACK + cpu->sp), data);
 	cpu->sp -= 1;
 }
 
 u8 cpu_stack_pop(cpu_t *cpu) {
-	cpu->sp += 1;
-	return cpu_mem_read(cpu, (STACK) + cpu->sp);
+	cpu->sp++;
+	return cpu_mem_read(cpu, (u16)(STACK + cpu->sp));
 }
 
 void cpu_stack_push_u16(cpu_t *cpu, u16 data) {
@@ -245,8 +259,8 @@ void cpu_stack_push_u16(cpu_t *cpu, u16 data) {
 }
 
 u16 cpu_stack_pop_u16(cpu_t *cpu) {
-	u16 lo = cpu_stack_pop(cpu);
-	u16 hi = cpu_stack_pop(cpu);
+	u16 lo = (u16) cpu_stack_pop(cpu);
+	u16 hi = (u16) cpu_stack_pop(cpu);
 
 	return hi << 8 | lo;
 }
@@ -254,26 +268,37 @@ u16 cpu_stack_pop_u16(cpu_t *cpu) {
 void cpu_reset(cpu_t *cpu) {
 	cpu->a = 0;
 	cpu->x = 0;
-	cpu->sr = 0;
+	cpu->y = 0;
+	cpu->sp = STACK_RESET;
+	cpu->sr = 0b100100;
 
 	cpu->pc = cpu_mem_read_u16(cpu, 0xFFFC);
 }
 
 void cpu_load(cpu_t *cpu, u8 *program, int size) {
 	for (int i = 0; i < size; i++) {
-		cpu->memory[0x8000 + i] = program[i];
+		cpu->memory[0x0600 + i] = program[i];
 	}
 
-	cpu_mem_write_u16(cpu, 0xFFFC, 0x8000);
+	cpu_mem_write_u16(cpu, 0xFFFC, 0x0600);
 }
 
 void cpu_run(cpu_t *cpu) {
+	cpu_run_with_callback(cpu, NULL);
+}
+
+void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 	while (true) {
+		if (callback != NULL) {
+			callback(cpu);
+		}
+
 		u8 code = cpu_mem_read(cpu, cpu->pc);
 		cpu->pc += 1;
 		u16 pc_state = cpu->pc;
 
 		opcode_t opcode = optable[code];
+
 		if (code == 0x00) break;
 		else if (code == 0xea) {
 			// "NOP" means do nothing
@@ -289,6 +314,7 @@ void cpu_run(cpu_t *cpu) {
 
 		if (pc_state == cpu->pc) cpu->pc += (u16) (opcode.bytes - 1);
 	}
+
 }
 
 void cpu_load_and_run(cpu_t *cpu, u8 *program, int size) {

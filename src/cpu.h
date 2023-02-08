@@ -7,6 +7,7 @@
 
 #define MEMORY_MAX 0xFFFF
 #define STACK 0x100
+#define STACK_RESET 0xfd;
 
 typedef struct cpu cpu_t;
 typedef struct opcode opcode_t;
@@ -79,6 +80,7 @@ void cpu_reset(cpu_t *cpu);
 
 void cpu_load(cpu_t *cpu, u8 *program, int size);
 void cpu_run(cpu_t *cpu);
+void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu));
 void cpu_load_and_run(cpu_t *cpu, u8 *program, int size);
 
 
