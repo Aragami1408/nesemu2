@@ -8,7 +8,30 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 add_compile_options(
-	-Wall -Wextra -Wno-unused-parameter -pedantic
+	-Wall 
+	-Wextra 
+	-Wno-unused-parameter 
+	-Wfloat-equal
+	-Wundef
+	-Wshadow
+	-Wpointer-arith
+	-Wcast-align
+	-Wstrict-prototypes
+	-Wstrict-overflow=5
+	-Wwrite-strings
+	-Waggregate-return
+	-Wcast-equal
+	-Wswitch-default
+	-Wswitch-enum
+	-Wconversion
+	-Wunreachable-code
+
+	-fno-stack-protector
+	-finstrument-functions
+	--coverage
+	-fsanitize={address, thread, undefined}
+	-pedantic
+
 	$<$<CONFIG:RELEASE>:-O2>
 	$<$<CONFIG:DEBUG>:-O0>
 	$<$<CONFIG:DEBUG>:-ggdb3>
@@ -19,18 +42,18 @@ add_compile_definitions(
 	)
 
 
-#find_package(SDL2 REQUIRED)
-#find_package(SDL2_image REQUIRED)
-#find_package(SDL2_ttf REQUIRED)
-#include_directories(nesemu2 ${SDL2_INCLUDE_DIRS})
-#include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
-#include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+include_directories(nesemu2 ${SDL2_INCLUDE_DIRS})
+include_directories(nesemu2 ${SDL2_IMAGE_INCLUDE_DIRS})
+include_directories(nesemu2 ${SDL2_TTF_INCLUDE_DIRS})
 
 add_library(nesemu2_lib src/cpu.c src/opcode.c src/logger.c)
 
 add_executable(nesemu2 src/main.c)
 target_link_libraries(nesemu2
-		#${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
+		${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES}
 		nesemu2_lib)
 
 # TESTING SECTION
