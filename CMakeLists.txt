@@ -20,16 +20,12 @@ add_compile_options(
 	-Wstrict-overflow=5
 	-Wwrite-strings
 	-Waggregate-return
-	-Wcast-equal
+	-Wcast-qual
 	-Wswitch-default
 	-Wswitch-enum
 	-Wconversion
 	-Wunreachable-code
 
-	-fno-stack-protector
-	-finstrument-functions
-	--coverage
-	-fsanitize={address, thread, undefined}
 	-pedantic
 
 	$<$<CONFIG:RELEASE>:-O2>
