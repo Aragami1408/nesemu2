@@ -27,8 +27,8 @@ typedef enum log_level {
 	LOG_LEVEL_TRACE = 5
 } log_level_t;
 
-bool logger_init();
-void logger_free();
+bool logger_init(void);
+void logger_free(void);
 
 void logger_output(log_level_t level, const char *message, ...);
 
