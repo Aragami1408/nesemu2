@@ -58,7 +58,7 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 
 			u8 ptr = pos + cpu->x;
 			u8 lo = cpu_mem_read(cpu, (u16) ptr);
-			u8 hi = cpu_mem_read(cpu, (u16) ptr + 1);
+			u8 hi = cpu_mem_read(cpu, (u16) (ptr + 1));
 			return ((u16) hi) << 8 | ((u16) lo);
 		} break;
 
@@ -66,18 +66,26 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 			u8 pos = cpu_mem_read(cpu, cpu->pc);		
 
 			u8 lo = cpu_mem_read(cpu, (u16) pos);
-			u8 hi = cpu_mem_read(cpu, (u16) pos + 1);
+			u8 hi = cpu_mem_read(cpu, (u16) (pos + 1));
 			u16 deref_pos = ((u16) hi) << 8 | ((u16) lo);
 			return deref_pos + (u16) cpu->y;
-
 		} break;
+
+		case ACC:
+			break;
+		
+		case IND:
+			break;
+
+		case NONE:
+			break;
 
 		default: {
 			printf("Addressing Mode not supported\n");
 		} break;
 	}
 
-	return -1;
+	return (u16) -1;
 }
 
 static void update_negative_flags(cpu_t *cpu, u8 result) {
@@ -96,7 +104,7 @@ static void set_carry_flag(cpu_t *cpu) {
 }
 
 static void clear_carry_flag(cpu_t *cpu) {
-	cpu->sr &= ~SF_CARRY;
+	cpu->sr &= (u8) (~SF_CARRY);
 }
 
 static void set_reg_a(cpu_t *cpu, u8 value) {
@@ -109,8 +117,8 @@ static void add_to_reg_a(cpu_t *cpu, u8 data) {
 	u16 sum = (u16) (cpu->a + data + (cpu->sr & SF_CARRY) ? 1 : 0);
 	bool carry = sum > 0xff;
 	set_flag(cpu, carry, SF_CARRY);
-	u8 result = sum;
-	set_flag(cpu, (data ^ result) & (result ^ cpu->a) & 0x80 != 0, SF_OVERFLOW);
+	u8 result = (u8) sum;
+	set_flag(cpu, ((data ^ result) & (result ^ cpu->a) & 0x80) != 0, SF_OVERFLOW);
 	set_reg_a(cpu, result);
 }
 
@@ -125,7 +133,7 @@ static void compare(cpu_t *cpu, enum addressing_mode_t am, u8 compare_with) {
 static void branch(cpu_t *cpu, bool condition) {
 	if (condition) {
 		i8 jump = (i8) cpu_mem_read(cpu, cpu->pc);
-		u16 jump_addr = cpu->pc + 1 + (u16) jump;
+		u16 jump_addr = (u16) (cpu->pc + 1 + jump);
 
 		cpu->pc = jump_addr;
 	}
@@ -381,7 +389,7 @@ void opcode_pla(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->sr = cpu_stack_pop(cpu);
-	cpu->sr &= ~SF_BREAK;	
+	cpu->sr &= (u8) ~(SF_BREAK);	
 	cpu->sr |= SF_BREAK2;	
 }
 
@@ -430,7 +438,7 @@ void opcode_sbc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	u16 addr = get_operand_address(cpu, addr_mode);
 	u8 value = cpu_mem_read(cpu, addr);
 
-	add_to_reg_a(cpu,(-((i8) value))-1);	
+	add_to_reg_a(cpu,(u8) ((-((i8) value))-1));	
 }
 
 void opcode_cmp(cpu_t *cpu, enum addressing_mode_t addr_mode) {
@@ -475,13 +483,13 @@ void opcode_clc(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	clear_carry_flag(cpu);
 }
 void opcode_cld(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->sr &= ~SF_DECIMAL;
+	cpu->sr &= (u8) ~(SF_DECIMAL);
 }
 void opcode_cli(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->sr &= ~SF_INTERRUPT;
+	cpu->sr &= (u8) ~(SF_INTERRUPT);
 }
 void opcode_clv(cpu_t *cpu, enum addressing_mode_t addr_mode) {
-	cpu->sr &= ~SF_OVERFLOW;
+	cpu->sr &= (u8) ~(SF_OVERFLOW);
 }
 void opcode_sec(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	set_carry_flag(cpu);
@@ -495,7 +503,7 @@ void opcode_sei(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 
 void opcode_rti(cpu_t *cpu, enum addressing_mode_t addr_mode) {
 	cpu->sr = cpu_stack_pop(cpu);
-	cpu->sr &= ~SF_BREAK;
+	cpu->sr &= (u8) ~(SF_BREAK);
 	cpu->sr |= SF_BREAK2;
 
 
