@@ -10,7 +10,7 @@
 static opcode_t optable[0xFF + 1];
 
 
-static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcode_func func, enum addressing_mode_t mode) {
+static void optable_assign(u8 code, const char *mnemonic, int bytes, int cycles, opcode_func func, enum addressing_mode_t mode) {
 	optable[code].code = code;
 	strcpy(optable[code].mnemonic, mnemonic);
 	optable[code].bytes = bytes;
@@ -19,7 +19,7 @@ static void optable_assign(u8 code, char *mnemonic, int bytes, int cycles, opcod
 	optable[code].mode = mode;
 }
 
-static void optable_generator() {
+static void optable_generator(void) {
 	optable_assign(0x00, "BRK", 1, 7, NULL, NONE); // Don't worry. opcode_func of BRK is already handled in cpu_run's loop already
 	optable_assign(0xea, "NOP", 1, 2, NULL, NONE);
 
@@ -194,7 +194,7 @@ static void optable_generator() {
 
 }
 
-cpu_t *cpu_init() {
+cpu_t *cpu_init(void) {
 	cpu_t *cpu = (cpu_t *) malloc(sizeof(cpu_t));
 	if (cpu == NULL) {
 		return NULL;
@@ -231,25 +231,25 @@ u16 cpu_mem_read_u16(cpu_t *cpu, u16 pos) {
 }
 
 void cpu_mem_write_u16(cpu_t *cpu, u16 pos, u16 data) {
-	u8 hi = data >> 8;
-	u8 lo = data & 0xff;
+	u8 hi = (u8)  (data >> 8);
+	u8 lo = (u8) (data & 0xff);
 	cpu_mem_write(cpu, pos, lo);
 	cpu_mem_write(cpu, pos + 1, hi);
 }
 
 void cpu_stack_push(cpu_t *cpu, u8 data) {
-	cpu_mem_write(cpu, (u16)(STACK + cpu->sp), data);
+	cpu_mem_write(cpu, STACK + cpu->sp, data);
 	cpu->sp -= 1;
 }
 
 u8 cpu_stack_pop(cpu_t *cpu) {
 	cpu->sp++;
-	return cpu_mem_read(cpu, (u16)(STACK + cpu->sp));
+	return cpu_mem_read(cpu, STACK + cpu->sp);
 }
 
 void cpu_stack_push_u16(cpu_t *cpu, u16 data) {
-	u8 hi = data >> 8;
-	u8 lo = data & 0xff;
+	u8 hi = (u8) (data >> 8);
+	u8 lo = (u8) (data & 0xff);
 	cpu_stack_push(cpu, hi);
 	cpu_stack_push(cpu, lo);
 }
@@ -285,9 +285,6 @@ void cpu_run(cpu_t *cpu) {
 
 void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 	while (true) {
-		if (callback != NULL) {
-			callback(cpu);
-		}
 
 		u8 code = cpu_mem_read(cpu, cpu->pc);
 		cpu->pc += 1;
@@ -307,8 +304,11 @@ void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 			opcode.func(cpu, opcode.mode);
 		}
 		
-
 		if (pc_state == cpu->pc) cpu->pc += (u16) (opcode.bytes - 1);
+
+		if (callback != NULL) {
+			callback(cpu);
+		}
 	}
 
 }

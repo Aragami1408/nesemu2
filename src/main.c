@@ -37,9 +37,9 @@ u8 game_code[] = {
 
 static SDL_Color RGB(int r, int g, int b) {
 	SDL_Color color;
-	color.r = r;
-	color.g = g;
-	color.b = b;
+	color.r = (Uint8) r;
+	color.g = (Uint8) g;
+	color.b = (Uint8) b;
 
 	return color;
 }
@@ -68,9 +68,9 @@ static bool read_screen_state(cpu_t *cpu, u8 *frame) {
 	for (u16 i = 0x0200; i < 0x600; i++) {
 		u8 color_idx = cpu_mem_read(cpu, i);
 		SDL_Color current_color = color(color_idx);
-		int b1 = current_color.r;
-		int b2 = current_color.g;
-		int b3 = current_color.b;
+		u8 b1 = current_color.r;
+		u8 b2 = current_color.g;
+		u8 b3 = current_color.b;
 
 		if (frame[frame_idx] != b1 || frame[frame_idx + 1] != b2 || frame[frame_idx + 2] != b3) {
 			frame[frame_idx] = b1;
@@ -110,11 +110,13 @@ static void game_cycle(cpu_t *cpu) {
 						break;
 				}
 				break;
+			default:
+				break;
 		}
 	}
 
 	srand(time(NULL));	
-	cpu_mem_write(cpu, 0xfe, (rand() % 16) + 1);
+	cpu_mem_write(cpu, 0xfe, (u8) ((rand() % 16) + 1));
 
 	if(read_screen_state(cpu, screen_state)) {
 		SDL_UpdateTexture(texture, NULL, screen_state, 32 * 3);
@@ -130,7 +132,7 @@ static void panic_and_abort(const char *title, const char *text) {
     exit(1);
 }
 
-static void init_sdl2() {
+static void init_sdl2(void) {
 	// init sdl2
 	if (SDL_Init(SDL_INIT_EVERYTHING) == -1) {
         panic_and_abort("SDL_Init failed", SDL_GetError());
@@ -154,7 +156,7 @@ static void init_sdl2() {
     }
 }
 
-static void close_sdl2() {
+static void close_sdl2(void) {
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyTexture(texture);
