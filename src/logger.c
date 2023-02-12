@@ -1,11 +1,11 @@
 #include "logger.h"
 
-bool logger_initbool() {
+bool logger_init(void) {
     // TODO: create a log file
     return true;
 }
 
-void logger_free() {
+void logger_free(void) {
     // TODO: cleanup logger/write queued entries.
 }
 
