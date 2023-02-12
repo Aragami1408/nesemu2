@@ -60,7 +60,7 @@ enum addressing_mode_t {
 };
 
 
-cpu_t *cpu_init();
+cpu_t *cpu_init(void);
 
 u8 cpu_mem_read(cpu_t *cpu, u16 addr);
 void cpu_mem_write(cpu_t *cpu, u16 addr, u8 data);
