@@ -115,14 +115,15 @@ static void game_cycle(cpu_t *cpu) {
 		}
 	}
 
-	srand(time(NULL));	
-	cpu_mem_write(cpu, 0xfe, (u8) ((rand() % 16) + 1));
+
+	cpu_mem_write(cpu, 0xfe, (u8) (rand() % (16 - 1) + 1));
 
 	if(read_screen_state(cpu, screen_state)) {
 		SDL_UpdateTexture(texture, NULL, screen_state, 32 * 3);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 	}
+
 }
 
 static void panic_and_abort(const char *title, const char *text) {
@@ -165,11 +166,13 @@ static void close_sdl2(void) {
 
 int main(int argc, char **argv) {
 	cpu_t *cpu = cpu_init();
+	// init_sdl2();
+	srand(time(NULL));
 	size_t game_code_size = sizeof(game_code) / sizeof(game_code[0]);
 	cpu_load(cpu, game_code, game_code_size);
 	cpu_reset(cpu);
-	cpu_mem_write(cpu, 0xfe, 5);
-	cpu_run_with_callback(cpu, NULL);
+	cpu_run(cpu);
 	cpu_free(cpu);
+	// close_sdl2();
 	return 0;
 }

@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#include "logger.h"
+#include <stdbool.h>
 
 #define MEMORY_MAX 0xFFFF
 #define STACK 0x100
@@ -23,7 +23,7 @@ typedef struct opcode opcode_t;
 //  | |   +----------- Break Command
 //  | +--------------- Overflow Flag
 //  +----------------- Negative Flag
-//
+
 #define SF_NEGATIVE 	 1u << 7
 #define SF_OVERFLOW 	 1u << 6
 #define SF_BREAK2		 1u << 5
@@ -36,29 +36,23 @@ typedef struct opcode opcode_t;
 enum addressing_mode_t {
 	// Accumulator
 	ACC,
-
 	// Immediate
 	IMM,
-
 	// Zero Page
 	ZP,
 	ZPX,
 	ZPY,
-
 	// Absolute
 	ABS,
 	ABSX,
 	ABSY,
-
 	// Indirect
 	IND,
 	INDX,
 	INDY,
-
 	// None Addressing
 	NONE
 };
-
 
 cpu_t *cpu_init(void);
 
@@ -83,11 +77,7 @@ void cpu_run(cpu_t *cpu);
 void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu));
 void cpu_load_and_run(cpu_t *cpu, u8 *program, int size);
 
-
-void cpu_regdump(cpu_t *cpu);
-
 void cpu_free(cpu_t *cpu);
-
 
 struct cpu {
 	u8 a; 			// Register A

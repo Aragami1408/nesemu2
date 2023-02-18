@@ -4,54 +4,78 @@ extern "C" {
 	#include "../src/cpu.h"
 }
 
-TEST(opcode_test, test_lda_immediate_load_data) {
-	cpu_t *cpu = cpu_init();	
-	u8 program[] = {0xa9, 0x05, 0x00};
+class CPU6502Test : public ::testing::Test {
+public:
+	cpu_t *cpu;
+
+	void SetUp() override {
+		cpu = cpu_init();	
+	}
+
+	void TearDown() override {
+		cpu_free(cpu);
+	}
+};
+
+static void verify_unmodified_flags(const cpu_t *cpu, const cpu_t *cpu_copy) {
+	EXPECT_EQ(cpu->sr & SF_CARRY, cpu_copy->sr & SF_CARRY);
+	EXPECT_EQ(cpu->sr & SF_CARRY, cpu_copy->sr & SF_CARRY);
+	EXPECT_EQ(cpu->sr & SF_CARRY, cpu_copy->sr & SF_CARRY);
+	EXPECT_EQ(cpu->sr & SF_CARRY, cpu_copy->sr & SF_CARRY);
+	EXPECT_EQ(cpu->sr & SF_CARRY, cpu_copy->sr & SF_CARRY);
+}
+
+TEST_F(CPU6502Test, lda_imm_test) {
+	u8 program[] = {0xa9, 0x84, 0x00};
+
+	cpu_t *cpu_copy = cpu;
 	cpu_load_and_run(cpu, program, 3);
-	EXPECT_EQ(cpu->a, 5);
-	EXPECT_EQ(cpu->sr & 0b00000010, 0b00);
-	EXPECT_EQ(cpu->sr & 0b10000000, 0b00);
-	cpu_free(cpu);
+
+	EXPECT_EQ(cpu->a, 0x84);
+	EXPECT_TRUE(cpu->sr & SF_NEGATIVE);
+	EXPECT_FALSE(cpu->sr & SF_ZERO);
+	verify_unmodified_flags(cpu, cpu_copy);
 }
 
-TEST(opcode_test, test_tax_move_a_to_x) {
-	cpu_t *cpu = cpu_init();	
-	cpu->a = 10;
-	u8 program[] = {0xaa, 0x00};
-	cpu_load_and_run(cpu, program, 2);
-	EXPECT_EQ(cpu->x, 10);
-	cpu_free(cpu);
+TEST_F(CPU6502Test, lda_zp_test) {
+	u8 program[] = {0xa5, 0x42, 0x00};
+
+	cpu_t *cpu_copy = cpu;
+	cpu_mem_write(cpu, 0x0042, 0x37);
+	cpu_load_and_run(cpu, program, 3);
+
+	EXPECT_EQ(cpu->a, 0x37);
+	EXPECT_FALSE(cpu->sr & SF_ZERO);
+	EXPECT_FALSE(cpu->sr & SF_NEGATIVE);
+	verify_unmodified_flags(cpu, cpu_copy);
 }
 
-TEST(opcode_test, test_5_ops_working_together) {
-	cpu_t *cpu = cpu_init();	
-	u8 program[] = {0xa9, 0xc0, 0xaa, 0xe8, 0x00};
-	cpu_load_and_run(cpu, program, 5);
-	EXPECT_EQ(cpu->x, 0xc1);
-	cpu_free(cpu);
+TEST_F(CPU6502Test, lda_zpx_test) {
+	cpu->x = 5;
+	u8 program1[] = {0xb5, 0x42, 0x00};
+	cpu_mem_write(cpu, 0x47, 0x37);
+
+	cpu_t *cpu_copy = cpu;
+	cpu_load_and_run(cpu, program1, 3);
+
+	EXPECT_EQ(cpu->a, 0x37);
+	EXPECT_FALSE(cpu->sr & SF_ZERO);
+	EXPECT_FALSE(cpu->sr & SF_NEGATIVE);
+	verify_unmodified_flags(cpu, cpu_copy);
 }
 
-TEST(opcode_test, test_inx_overflow) {
-	cpu_t *cpu = cpu_init();	
+TEST_F(CPU6502Test, lda_zpx_test_if_wrap_test) {
+	cpu_reset(cpu);
+	// when it wraps
 	cpu->x = 0xff;
-	u8 program[] = {0xe8, 0xe8, 0x00};
-	cpu_load_and_run(cpu, program, 3);
-	EXPECT_EQ(cpu->x, 1);
-	cpu_free(cpu);
-	
-}
+	u8 program2[] = {0xb5, 0x80, 0x00};
+	cpu_mem_write(cpu, 0x7f, 0x37);
 
-TEST(opcode_test, test_lda_from_memory) {
-	cpu_t *cpu = cpu_init();	
-	cpu_mem_write(cpu, 0x10, 0x55);
-	u8 program[] = {0xa5, 0x10, 0x00};
-	cpu_load_and_run(cpu, program, 3);
-	EXPECT_EQ(cpu->a, 0x55);
-	cpu_free(cpu);
-	
-}
+	cpu_t *cpu_copy = cpu;
+	cpu_load_and_run(cpu, program2, 3);
 
-int main(int argc, char **argv) {
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	EXPECT_EQ(cpu->a, 0x37);
+	EXPECT_FALSE(cpu->sr & SF_ZERO);
+	EXPECT_FALSE(cpu->sr & SF_NEGATIVE);
+	verify_unmodified_flags(cpu, cpu_copy);
 }

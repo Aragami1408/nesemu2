@@ -9,7 +9,6 @@
 
 static opcode_t optable[0xFF + 1];
 
-
 static void optable_assign(u8 code, const char *mnemonic, int bytes, int cycles, opcode_func func, enum addressing_mode_t mode) {
 	optable[code].code = code;
 	strcpy(optable[code].mnemonic, mnemonic);
@@ -206,7 +205,7 @@ cpu_t *cpu_init(void) {
 
 	cpu->pc = 0;
 	cpu->sp = STACK_RESET;
-	cpu->sr = 0b100100;
+	cpu->sr = 0x24;
 
 	for (u16 i = 0; i < MEMORY_MAX; i++) cpu->memory[i] = 0;
 	
@@ -266,7 +265,7 @@ void cpu_reset(cpu_t *cpu) {
 	cpu->x = 0;
 	cpu->y = 0;
 	cpu->sp = STACK_RESET;
-	cpu->sr = 0b100100;
+	cpu->sr = 0x24;
 
 	cpu->pc = cpu_mem_read_u16(cpu, 0xFFFC);
 }
@@ -291,13 +290,13 @@ void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 		u16 pc_state = cpu->pc;
 
 		opcode_t opcode = optable[code];
+		cpu_mem_write(cpu, 0xfe, (u8) (rand() % (16 - 1) + 1));
 
 		if (code == 0x00) break;
 		else if (code == 0xea) {
 			// "NOP" means do nothing
 		}
 		else if (opcode.func == NULL) {
-			LOG_ERROR("Unknown opcode: 0x%hhx\n", opcode);
 			break;
 		}
 		else {
@@ -317,13 +316,6 @@ void cpu_load_and_run(cpu_t *cpu, u8 *program, int size) {
 	cpu_load(cpu, program, size);
 	cpu->pc = cpu_mem_read_u16(cpu, 0xfffc);
 	cpu_run(cpu);
-}
-
-void cpu_regdump(cpu_t *cpu) {
-	printf("Register A: 0x%hhx\n", cpu->a);
-	printf("Register X: 0x%hhx\n", cpu->x);
-	printf("Register Y: 0x%hhx\n", cpu->y);
-	printf("Status Register: 0x%hhx\n", cpu->sr);
 }
 
 void cpu_free(cpu_t *cpu) {

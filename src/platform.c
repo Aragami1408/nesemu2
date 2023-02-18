@@ -1,80 +1,44 @@
 #include "platform.h"
 
+#include <stdlib.h>
 
-platform_t *platform_init(const char *title, int width, int height, bool fullscreen) {
-	// TODO: Write loggings
-	platform_t *p = (platform_t *) malloc(sizeof(platform_t));	
-	
+static void panic_and_abort(const char *title, const char *text) {
+	fprintf(stderr, "PANIC: %s ... %s\n", title, text);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, text, NULL);
+    SDL_Quit();
+    exit(1);
+}
+
+platform_t *platform_init(const char *title, int window_width, int window_height, int texture_width, int texture_height) {
+	platform_t *p = malloc(sizeof(platform_t *));	
 	if (p == NULL) {
-		return NULL;
-	}		
-
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+		panic_and_abort("Failed to initialize platform", "Out of memory");
 		return NULL;
 	}
 
-	p->window = SDL_CreateWindow(
-		title,
-		SDL_WINDOWPOS_CENTERED,
-		SDL_WINDOWPOS_CENTERED,
-		width,
-		height,
-		SDL_WINDOW_SHOWN
-	);
+	p->window = SDL_CreateWindow("Snake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 32 * 10, 32 * 10, SDL_WINDOW_SHOWN);
+	if (!p->window) {
+        panic_and_abort("SDL_CreateWindow failed", SDL_GetError());
+    }
 
-	if (p->window == NULL) {
-		return NULL;
-	}
+	p->renderer = SDL_CreateRenderer(p->window, -1, SDL_RENDERER_PRESENTVSYNC);
+	if (!p->renderer) {
+        panic_and_abort("SDL_CreateRenderer failed", SDL_GetError());
+    }
 
-	p->renderer = SDL_CreateRenderer(p->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (p->renderer == NULL) {
-		return NULL;
-	}
+	SDL_RenderSetScale(p->renderer, 10, 10);
 
 	p->texture = SDL_CreateTexture(p->renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_TARGET, 32, 32);
-
-	SDL_RenderSetScale(p->renderer, 10.0, 10.0);
-
-	p->running = true;
+	if (!p->texture) {
+        panic_and_abort("SDL_CreateTexture failed", SDL_GetError());
+    }
 
 	return p;
 }
 
-void platform_handle_input(platform_t *p, cpu_t *cpu) {
-	if(SDL_PollEvent(&(p->event))) {
-		switch(p->event.type) {
-			case SDL_QUIT:
-				p->running = false;
-				break;
-
-			case SDL_KEYDOWN:
-				switch(p->event.key.keysym.sym) {
-					case SDLK_ESCAPE:
-						p->running = false;
-						break;
-
-					case SDLK_w: 
-						cpu_mem_write(cpu, 0xff, 0x77);
-						break;
-
-					case SDLK_s: 
-						cpu_mem_write(cpu, 0xff, 0x73);
-						break;
-
-					case SDLK_a: 
-						cpu_mem_write(cpu, 0xff, 0x61);
-						break;
-
-					case SDLK_d: 
-						cpu_mem_write(cpu, 0xff, 0x64);
-						break;
-
-					default:
-						break;
-
-				}
-			default:
-				break;
-		}
-	}
+void platform_free(platform_t *platform) {
+	SDL_DestroyWindow(platform->window);
+	SDL_DestroyRenderer(platform->renderer);
+	SDL_DestroyTexture(platform->texture);
+	SDL_Quit();
 }

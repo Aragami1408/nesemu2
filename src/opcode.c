@@ -1,6 +1,8 @@
 #include "cpu.h"
 #include "types.h"
 
+#include <stdio.h>
+
 static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am);
 
 static void set_flag(cpu_t *cpu, bool v, u8 flag);
@@ -32,13 +34,13 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 			break;
 		case ZPX: {
 			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			u16 addr = (u16) (pos + cpu->x);
-			return addr;
+			u8 addr = (pos + cpu->x);
+			return (u16) addr;
 		} break;
 		case ZPY: {
 			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			u16 addr = (u16) (pos + cpu->y);
-			return addr;
+			u8 addr = (u16) (pos + cpu->y);
+			return (u16) addr;
 		} break;
 
 		case ABS:
@@ -114,7 +116,9 @@ static void set_reg_a(cpu_t *cpu, u8 value) {
 
 
 static void add_to_reg_a(cpu_t *cpu, u8 data) {
-	u16 sum = (u16) (cpu->a + data + (cpu->sr & SF_CARRY) ? 1 : 0);
+	u16 sum = (u16) (cpu->a + data);
+	sum += (cpu->sr & SF_CARRY) ? 1 : 0;
+
 	bool carry = sum > 0xff;
 	set_flag(cpu, carry, SF_CARRY);
 	u8 result = (u8) sum;
