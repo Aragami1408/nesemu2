@@ -5,7 +5,7 @@ add_compile_options(
 	-Wfloat-equal
 	-Wundef
 	-Wshadow
-    -Wstrict-prototypes
+	-Wstrict-prototypes
 	-Wpointer-arith
 	-Wcast-align
 	-Wstrict-overflow=5
