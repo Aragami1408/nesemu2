@@ -1,0 +1,20 @@
+nesemu2 - NES Emulator written in pure C
+========================================
+nesemu2 aims for a fast, stable and cross-platform NES Emulator.
+
+Requirements
+------------
+In order to build nesemu2 you need:
+- SDL2
+- SDL2_image
+- SDL2_ttf
+- GTest (optional, only for unit testing)
+
+Installation
+------------
+You only need two lines (Change from 'Release' to 'Debug' if you want to contribute):
+
+```
+$ mkdir build && cd build
+$ cmake -DCMAKE_BUILD_TYPE=Release -G "Ninja" ..
+```
