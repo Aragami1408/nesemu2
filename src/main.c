@@ -115,7 +115,6 @@ static void game_cycle(cpu_t *cpu) {
 		}
 	}
 
-
 	cpu_mem_write(cpu, 0xfe, (u8) (rand() % (16 - 1) + 1));
 
 	if(read_screen_state(cpu, screen_state)) {
@@ -166,13 +165,13 @@ static void close_sdl2(void) {
 
 int main(int argc, char **argv) {
 	cpu_t *cpu = cpu_init();
-	// init_sdl2();
+	init_sdl2();
 	srand(time(NULL));
 	size_t game_code_size = sizeof(game_code) / sizeof(game_code[0]);
 	cpu_load(cpu, game_code, game_code_size);
 	cpu_reset(cpu);
-	cpu_run(cpu);
+	cpu_run_with_callback(cpu, &game_cycle);
 	cpu_free(cpu);
-	// close_sdl2();
+	close_sdl2();
 	return 0;
 }

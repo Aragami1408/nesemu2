@@ -2,6 +2,20 @@ nesemu2 - NES Emulator written in pure C
 ========================================
 nesemu2 aims for a fast, stable and cross-platform NES Emulator.
 
+CAUTION: THIS PIECE OF SOFTWARE IS STILL WORKING IN PROGRESS, NOT READY FOR PRODUCTION YET
+
+Component progress
+------------
+- CPU: 100%
+- BUS: 0%
+- NES ROM: 0%
+- PPU: 0%
+  + Logic: 0%
+  + Render: 0%
+  + Scroll: 0%
+- GamePad: 0%
+- APU: 0%
+
 Requirements
 ------------
 In order to build nesemu2 you need:

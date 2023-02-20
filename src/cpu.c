@@ -290,7 +290,7 @@ void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 		u16 pc_state = cpu->pc;
 
 		opcode_t opcode = optable[code];
-		cpu_mem_write(cpu, 0xfe, (u8) (rand() % (16 - 1) + 1));
+		// cpu_mem_write(cpu, 0xfe, (u8) (rand() % (16 - 1) + 1));
 
 		if (code == 0x00) break;
 		else if (code == 0xea) {

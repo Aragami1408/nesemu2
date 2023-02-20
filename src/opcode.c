@@ -34,12 +34,12 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 			break;
 		case ZPX: {
 			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			u8 addr = (pos + cpu->x);
+			u8 addr = pos + cpu->x;
 			return (u16) addr;
 		} break;
 		case ZPY: {
 			u8 pos = cpu_mem_read(cpu, cpu->pc);
-			u8 addr = (u16) (pos + cpu->y);
+			u8 addr = pos + cpu->y;
 			return (u16) addr;
 		} break;
 
@@ -74,9 +74,11 @@ static u16 get_operand_address(cpu_t *cpu, enum addressing_mode_t am) {
 		} break;
 
 		case ACC:
+			// Basically nothing to do here since only A register is involved
 			break;
 		
 		case IND:
+			// Same for here
 			break;
 
 		case NONE:
