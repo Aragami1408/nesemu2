@@ -1,29 +1,24 @@
 add_compile_options(
-	-Wall 
-	-Wextra 
-	-Wno-unused-parameter 
-	-Wfloat-equal
-	-Wundef
-	-Wshadow
-	-Wstrict-prototypes
-	-Wpointer-arith
-	-Wcast-align
-	-Wstrict-overflow=5
+	-Werror
+	-Wall
+	-Wextra
+	-Wpedantic
+	-Wstrict-aliasing=3
 	-Wwrite-strings
-	-Wcast-qual
-	-Wswitch-default
-	-Wswitch-enum
-	-Wconversion
-	-Wunreachable-code
+	-Wvla
+	-Wcast-align=strict
+	-Wstrict-prototypes
+	-Wstringop-overflow=4
+	-Wno-logical-op-parentheses
 
 	$<$<CONFIG:RELEASE>:-O2>
 	$<$<CONFIG:DEBUG>:-O0>
-	$<$<CONFIG:DEBUG>:-g>
+	$<$<CONFIG:DEBUG>:-ggdb>
 )
 
 add_compile_definitions(
 	$<$<CONFIG:RELEASE>:NDEBUG>
-	)
+)
 
 
 set(TARGET ${CMAKE_PROJECT_NAME})

@@ -1,11 +1,19 @@
 add_compile_options(
-    -Wall
-    -Wextra
+	-Werror
+	-Wall
+	-Wextra
+	-Wpedantic
+	-Wstrict-aliasing=3
+	-Wwrite-strings
+	-Wvla
+	-Wcast-align=strict
+	-Wstrict-prototypes
+	-Wstringop-overflow=4
+	-Wno-logical-op-parentheses
+	-O2
 )
 
-set(TARGET ${CMAKE_PROJECT_NAME}_test)
-file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cc)
-set(SOURCES ${TEST_SOURCES})
-add_executable(${TARGET} ${TEST_SOURCES})
-add_test(NAME ${TARGET} COMMAND ${TARGET})
-target_link_libraries(${TARGET} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest)
+set(TARGET ${CMAKE_PROJECT_NAME})
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.c)
+set(SOURCES ${SOURCES})
+add_executable(${TARGET}_test ${SOURCES})
