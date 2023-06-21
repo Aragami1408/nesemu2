@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include "types.h"
+
 #define LOG_WARN_ENABLED 1
 #define LOG_INFO_ENABLED 1
 #define LOG_DEBUG_ENABLED 1

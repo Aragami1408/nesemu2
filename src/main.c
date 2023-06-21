@@ -1,6 +1,5 @@
 #include "cpu.h"
 #include "logger.h"
-#include "platform.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -164,6 +163,8 @@ static void close_sdl2(void) {
 }
 
 int main(int argc, char **argv) {
+	(void)argc;
+	(void)argv;
 	cpu_t *cpu = cpu_init();
 	init_sdl2();
 	srand(time(NULL));

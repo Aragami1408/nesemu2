@@ -9,91 +9,206 @@
 
 static opcode_t optable[0xFF + 1];
 
-static void optable_assign(u8 code, const char *mnemonic, int bytes, int cycles, opcode_func func, enum addressing_mode_t mode) {
-	optable[code].code = code;
-	strcpy(optable[code].mnemonic, mnemonic);
-	optable[code].bytes = bytes;
-	optable[code].cycles = cycles;
-	optable[code].func = func;
-	optable[code].mode = mode;
-}
+#define OPTABLE_ASSIGN(__code, __mnemonic, __bytes, __cycles, __is_implied, __func, __mode) \
+	optable[(__code)].code = (__code); \
+	strcpy(optable[(__code)].mnemonic, (__mnemonic)); \
+	optable[(__code)].bytes = (__bytes); \
+	optable[(__code)].cycles = (__cycles); \
+	if((__is_implied)) { \
+		optable[(__code)].implied_opcode = (__func); \
+	}\
+	else {\
+		optable[(__code)].nimplied_opcode = (__func); \
+	}\
+	optable[(__code)].mode = (__mode); \
+
 
 static void optable_generator(void) {
-	optable_assign(0x00, "BRK", 1, 7, NULL, NONE); // Don't worry. opcode_func of BRK is already handled in cpu_run's loop already
-	optable_assign(0xea, "NOP", 1, 2, NULL, NONE);
+	optable[0x00] = (opcode_t){.code = 0x00, .bytes = 1, .cycles = 7, .nimplied_opcode = NULL, .mode = NONE};
+	strcpy(optable[0x00].mnemonic, "BRK");
 
-	optable_assign(0x69, "ADC", 2, 2, &opcode_adc, IMM);
-	optable_assign(0x65, "ADC", 2, 3, &opcode_adc, ZP);
-	optable_assign(0x75, "ADC", 2, 4, &opcode_adc, ZPX);
-	optable_assign(0x6d, "ADC", 3, 4, &opcode_adc, ABS);
-	optable_assign(0x7d, "ADC", 3, 4, &opcode_adc, ABSX);
-	optable_assign(0x79, "ADC", 3, 4, &opcode_adc, ABSY);
-	optable_assign(0x61, "ADC", 2, 6, &opcode_adc, INDX);
-	optable_assign(0x71, "ADC", 2, 5, &opcode_adc, INDY);
+	optable[0xea] = (opcode_t){.code = 0xea, .bytes = 1, .cycles = 2, .nimplied_opcode = NULL, .mode = NONE};
+	strcpy(optable[0xea].mnemonic, "NOP");
 
-	optable_assign(0xe9, "SBC", 2, 2, &opcode_sbc, IMM);
-	optable_assign(0xe5, "SBC", 2, 3, &opcode_sbc, ZP);
-	optable_assign(0xf5, "SBC", 2, 4, &opcode_sbc, ZPX);
-	optable_assign(0xed, "SBC", 3, 4, &opcode_sbc, ABS);
-	optable_assign(0xfd, "SBC", 3, 4, &opcode_sbc, ABSX);
-	optable_assign(0xf9, "SBC", 3, 4, &opcode_sbc, ABSY);
-	optable_assign(0xe1, "SBC", 2, 6, &opcode_sbc, INDX);
-	optable_assign(0xf1, "SBC", 2, 5, &opcode_sbc, INDY);
+	optable[0x69] = (opcode_t){.code = 0x69, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_adc, .mode = IMM};
+	strcpy(optable[0x69].mnemonic, "ADC");
 
-	optable_assign(0xc9, "CMP", 2, 2, &opcode_cmp, IMM);
-	optable_assign(0xc5, "CMP", 2, 3, &opcode_cmp, ZP);
-	optable_assign(0xd5, "CMP", 2, 4, &opcode_cmp, ZPX);
-	optable_assign(0xcd, "CMP", 3, 4, &opcode_cmp, ABS);
-	optable_assign(0xdd, "CMP", 3, 4, &opcode_cmp, ABSX);
-	optable_assign(0xd9, "CMP", 3, 4, &opcode_cmp, ABSY);
-	optable_assign(0xc1, "CMP", 2, 6, &opcode_cmp, INDX);
-	optable_assign(0xd1, "CMP", 2, 5, &opcode_cmp, INDY);
+	optable[0x65] = (opcode_t){.code = 0x65, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_adc, .mode = ZP};
+	strcpy(optable[0x65].mnemonic, "ADC");
 
-	optable_assign(0xe0, "CPX", 2, 2, &opcode_cpx, IMM);
-	optable_assign(0xe4, "CPX", 2, 3, &opcode_cpx, ZP);
-	optable_assign(0xec, "CPX", 3, 4, &opcode_cpx, ABS);
+	optable[0x75] = (opcode_t){.code = 0x75, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_adc, .mode = ZPX};
+	strcpy(optable[0x75].mnemonic, "ADC");
 
-	optable_assign(0xc0, "CPY", 2, 2, &opcode_cpy, IMM);
-	optable_assign(0xc4, "CPY", 2, 3, &opcode_cpy, ZP);
-	optable_assign(0xcc, "CPY", 3, 4, &opcode_cpy, ABS);
+	optable[0x6d] = (opcode_t){.code = 0x6d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_adc, .mode = ABS};
+	strcpy(optable[0x6d].mnemonic, "ADC");
 
-	
-	optable_assign(0x29, "AND", 2, 2, &opcode_and, IMM);
-	optable_assign(0x25, "AND", 2, 3, &opcode_and, ZP);
-	optable_assign(0x35, "AND", 2, 4, &opcode_and, ZPX);
-	optable_assign(0x2d, "AND", 3, 4, &opcode_and, ABS);
-	optable_assign(0x3d, "AND", 3, 4, &opcode_and, ABSX);
-	optable_assign(0x39, "AND", 3, 4, &opcode_and, ABSY);
-	optable_assign(0x21, "AND", 2, 6, &opcode_and, INDX);
-	optable_assign(0x31, "AND", 2, 5, &opcode_and, INDY);
+	optable[0x7d] = (opcode_t){.code = 0x7d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_adc, .mode = ABSX};
+	strcpy(optable[0x7d].mnemonic, "ADC");
 
-	optable_assign(0x49, "EOR", 2, 2, &opcode_eor, IMM);
-	optable_assign(0x45, "EOR", 2, 3, &opcode_eor, ZP);
-	optable_assign(0x55, "EOR", 2, 4, &opcode_eor, ZPX);
-	optable_assign(0x4d, "EOR", 3, 4, &opcode_eor, ABS);
-	optable_assign(0x5d, "EOR", 3, 4, &opcode_eor, ABSX);
-	optable_assign(0x59, "EOR", 3, 4, &opcode_eor, ABSY);
-	optable_assign(0x41, "EOR", 2, 6, &opcode_eor, INDX);
-	optable_assign(0x51, "EOR", 2, 5, &opcode_eor, ABSY);
+	optable[0x79] = (opcode_t){.code = 0x79, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_adc, .mode = ABSY};
+	strcpy(optable[0x79].mnemonic, "ADC");
 
-	optable_assign(0x09, "ORA", 2, 2, &opcode_ora, IMM);
-	optable_assign(0x05, "ORA", 2, 3, &opcode_ora, ZP);
-	optable_assign(0x15, "ORA", 2, 4, &opcode_ora, ZPX);
-	optable_assign(0x0d, "ORA", 3, 4, &opcode_ora, ABS);
-	optable_assign(0x1d, "ORA", 3, 4, &opcode_ora, ABSX);
-	optable_assign(0x19, "ORA", 3, 4, &opcode_ora, ABSY);
-	optable_assign(0x01, "ORA", 2, 6, &opcode_ora, INDX);
-	optable_assign(0x11, "ORA", 2, 5, &opcode_ora, INDY);
+	optable[0x61] = (opcode_t){.code = 0x61, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_adc, .mode = INDX};
+	strcpy(optable[0x61].mnemonic, "ADC");
 
-	optable_assign(0x24, "BIT", 2, 3, &opcode_bit, ZP);
-	optable_assign(0x2c, "BIT", 3, 4, &opcode_bit, ABS);
+	optable[0x71] = (opcode_t){.code = 0x71, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_adc, .mode = INDY};
+	strcpy(optable[0x71].mnemonic, "ADC");
 
+	optable[0xe9] = (opcode_t){.code = 0xe9, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_sbc, .mode = IMM};
+	strcpy(optable[0xe9].mnemonic, "SBC");
 
+	optable[0xe5] = (opcode_t){.code = 0xe5, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_sbc, .mode = ZP};
+	strcpy(optable[0xe5].mnemonic, "SBC");
 
-	optable_assign(0xe6, "INC", 2, 5, &opcode_inc, ZP);
-	optable_assign(0xf6, "INC", 2, 6, &opcode_inc, ZPX);
-	optable_assign(0xee, "INC", 3, 6, &opcode_inc, ABS);
-	optable_assign(0xfe, "INC", 3, 7, &opcode_inc, ABSX);
+	optable[0xf5] = (opcode_t){.code = 0xf5, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_sbc, .mode = ZPX};
+	strcpy(optable[0xf5].mnemonic, "SBC");
+
+	optable[0xed] = (opcode_t){.code = 0xed, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_sbc, .mode = ABS};
+	strcpy(optable[0xed].mnemonic, "SBC");
+
+	optable[0xfd] = (opcode_t){.code = 0xfd, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_sbc, .mode = ABSX};
+	strcpy(optable[0xfd].mnemonic, "SBC");
+
+	optable[0xf9] = (opcode_t){.code = 0xf9, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_sbc, .mode = ABSY};
+	strcpy(optable[0xf9].mnemonic, "SBC");
+
+	optable[0xe1] = (opcode_t){.code = 0xe1, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_sbc, .mode = INDX};
+	strcpy(optable[0xe1].mnemonic, "SBC");
+
+	optable[0xf1] = (opcode_t){.code = 0xf1, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_sbc, .mode = INDY};
+	strcpy(optable[0xf1].mnemonic, "SBC");
+
+	optable[0xc9] = (opcode_t){.code = 0xc9, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_cmp, .mode = IMM};
+	strcpy(optable[0xc9].mnemonic, "CMP");
+
+	optable[0xc5] = (opcode_t){.code = 0xc5, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_cmp, .mode = ZP};
+	strcpy(optable[0xc5].mnemonic, "CMP");
+
+	optable[0xd5] = (opcode_t){.code = 0xd5, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_cmp, .mode = ZPX};
+	strcpy(optable[0xd5].mnemonic, "CMP");
+
+	optable[0xcd] = (opcode_t){.code = 0xcd, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_cmp, .mode = ABS};
+	strcpy(optable[0xcd].mnemonic, "CMP");
+
+	optable[0xdd] = (opcode_t){.code = 0xdd, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_cmp, .mode = ABSX};
+	strcpy(optable[0xdd].mnemonic, "CMP");
+
+	optable[0xd9] = (opcode_t){.code = 0xd9, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_cmp, .mode = ABSY};
+	strcpy(optable[0xd9].mnemonic, "CMP");
+
+	optable[0xc1] = (opcode_t){.code = 0xc1, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_cmp, .mode = INDX};
+	strcpy(optable[0xc1].mnemonic, "CMP");
+
+	optable[0xd1] = (opcode_t){.code = 0xd1, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_cmp, .mode = INDY};
+	strcpy(optable[0xd1].mnemonic, "CMP");
+
+	optable[0xe0] = (opcode_t){.code = 0xe0, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_cpx, .mode = IMM};
+	strcpy(optable[0xe0].mnemonic, "CPX");
+
+	optable[0xe4] = (opcode_t){.code = 0xe4, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_cpx, .mode = ZP};
+	strcpy(optable[0xe4].mnemonic, "CPX");
+
+	optable[0xec] = (opcode_t){.code = 0xec, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_cpx, .mode = ABS};
+	strcpy(optable[0xec].mnemonic, "CPX");
+
+	optable[0xc0] = (opcode_t){.code = 0xc0, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_cpy, .mode = IMM};
+	strcpy(optable[0xc0].mnemonic, "CPY");
+
+	optable[0xc4] = (opcode_t){.code = 0xc4, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_cpy, .mode = ZP};
+	strcpy(optable[0xc4].mnemonic, "CPY");
+
+	optable[0xcc] = (opcode_t){.code = 0xcc, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_cpy, .mode = ABS};
+	strcpy(optable[0xcc].mnemonic, "CPY");
+
+	optable[0x29] = (opcode_t){.code = 0x29, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_and, .mode = IMM};
+	strcpy(optable[0x29].mnemonic, "AND");
+
+	optable[0x25] = (opcode_t){.code = 0x25, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_and, .mode = ZP};
+	strcpy(optable[0x25].mnemonic, "AND");
+
+	optable[0x35] = (opcode_t){.code = 0x35, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_and, .mode = ZPX};
+	strcpy(optable[0x35].mnemonic, "AND");
+
+	optable[0x2d] = (opcode_t){.code = 0x2d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_and, .mode = ABS};
+	strcpy(optable[0x2d].mnemonic, "AND");
+
+	optable[0x3d] = (opcode_t){.code = 0x3d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_and, .mode = ABSX};
+	strcpy(optable[0x3d].mnemonic, "AND");
+
+	optable[0x39] = (opcode_t){.code = 0x39, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_and, .mode = ABSY};
+	strcpy(optable[0x39].mnemonic, "AND");
+
+	optable[0x21] = (opcode_t){.code = 0x21, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_and, .mode = INDX};
+	strcpy(optable[0x21].mnemonic, "AND");
+
+	optable[0x31] = (opcode_t){.code = 0x31, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_and, .mode = INDY};
+	strcpy(optable[0x31].mnemonic, "AND");
+
+	optable[0x49] = (opcode_t){.code = 0x49, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_eor, .mode = IMM};
+	strcpy(optable[0x49].mnemonic, "EOR");
+
+	optable[0x45] = (opcode_t){.code = 0x45, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_eor, .mode = ZP};
+	strcpy(optable[0x45].mnemonic, "EOR");
+
+	optable[0x55] = (opcode_t){.code = 0x55, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_eor, .mode = ZPX};
+	strcpy(optable[0x55].mnemonic, "EOR");
+
+	optable[0x4d] = (opcode_t){.code = 0x4d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_eor, .mode = ABS};
+	strcpy(optable[0x4d].mnemonic, "EOR");
+
+	optable[0x5d] = (opcode_t){.code = 0x5d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_eor, .mode = ABSX};
+	strcpy(optable[0x5d].mnemonic, "EOR");
+
+	optable[0x59] = (opcode_t){.code = 0x59, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_eor, .mode = ABSY};
+	strcpy(optable[0x59].mnemonic, "EOR");
+
+	optable[0x41] = (opcode_t){.code = 0x41, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_eor, .mode = INDX};
+	strcpy(optable[0x41].mnemonic, "EOR");
+
+	optable[0x51] = (opcode_t){.code = 0x51, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_eor, .mode = ABSY};
+	strcpy(optable[0x51].mnemonic, "EOR");
+
+	optable[0x09] = (opcode_t){.code = 0x09, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_ora, .mode = IMM};
+	strcpy(optable[0x09].mnemonic, "ORA");
+
+	optable[0x05] = (opcode_t){.code = 0x05, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_ora, .mode = ZP};
+	strcpy(optable[0x05].mnemonic, "ORA");
+
+	optable[0x15] = (opcode_t){.code = 0x15, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_ora, .mode = ZPX};
+	strcpy(optable[0x15].mnemonic, "ORA");
+
+	optable[0x0d] = (opcode_t){.code = 0x0d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ora, .mode = ABS};
+	strcpy(optable[0x0d].mnemonic, "ORA");
+
+	optable[0x1d] = (opcode_t){.code = 0x1d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ora, .mode = ABSX};
+	strcpy(optable[0x1d].mnemonic, "ORA");
+
+	optable[0x19] = (opcode_t){.code = 0x19, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ora, .mode = ABSY};
+	strcpy(optable[0x19].mnemonic, "ORA");
+
+	optable[0x01] = (opcode_t){.code = 0x01, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_ora, .mode = INDX};
+	strcpy(optable[0x01].mnemonic, "ORA");
+
+	optable[0x11] = (opcode_t){.code = 0x11, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_ora, .mode = INDY};
+	strcpy(optable[0x11].mnemonic, "ORA");
+
+	optable[0x24] = (opcode_t){.code = 0x24, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_bit, .mode = ZP};
+	strcpy(optable[0x24].mnemonic, "BIT");
+
+	optable[0x2c] = (opcode_t){.code = 0x2c, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_bit, .mode = ABS};
+	strcpy(optable[0x2c].mnemonic, "BIT");
+
+	optable[0xe6] = (opcode_t){.code = 0xe6, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_inc, .mode = ZP};
+	strcpy(optable[0xe6].mnemonic, "INC");
+
+	optable[0xf6] = (opcode_t){.code = 0xf6, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_inc, .mode = ZPX};
+	strcpy(optable[0xf6].mnemonic, "INC");
+
+	optable[0xee] = (opcode_t){.code = 0xee, .bytes = 3, .cycles = 6, .nimplied_opcode = &opcode_inc, .mode = ABS};
+	strcpy(optable[0xee].mnemonic, "INC");
+
+	optable[0xfe] = (opcode_t){.code = 0xfe, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_inc, .mode = ABSX};
+	strcpy(optable[0xfe].mnemonic, "INC");
 
 	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
 	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
@@ -296,11 +411,17 @@ void cpu_run_with_callback(cpu_t *cpu, void (*callback)(cpu_t *cpu)) {
 		else if (code == 0xea) {
 			// "NOP" means do nothing
 		}
-		else if (opcode.func == NULL) {
-			break;
+		// else if (opcode.implied_opcode == NULL || opcode.nimplied_opcode == NULL) {
+		// 	break;
+		// }
+		else if (opcode.implied_opcode != NULL) {
+			opcode.implied_opcode(cpu);
+		}
+		else if (opcode.nimplied_opcode != NULL) {
+			opcode.nimplied_opcode(cpu, opcode.mode);
 		}
 		else {
-			opcode.func(cpu, opcode.mode);
+			break;
 		}
 		
 		if (pc_state == cpu->pc) cpu->pc += (u16) (opcode.bytes - 1);
