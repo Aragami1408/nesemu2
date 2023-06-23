@@ -9,20 +9,6 @@
 
 static opcode_t optable[0xFF + 1];
 
-#define OPTABLE_ASSIGN(__code, __mnemonic, __bytes, __cycles, __is_implied, __func, __mode) \
-	optable[(__code)].code = (__code); \
-	strcpy(optable[(__code)].mnemonic, (__mnemonic)); \
-	optable[(__code)].bytes = (__bytes); \
-	optable[(__code)].cycles = (__cycles); \
-	if((__is_implied)) { \
-		optable[(__code)].implied_opcode = (__func); \
-	}\
-	else {\
-		optable[(__code)].nimplied_opcode = (__func); \
-	}\
-	optable[(__code)].mode = (__mode); \
-
-
 static void optable_generator(void) {
 	optable[0x00] = (opcode_t){.code = 0x00, .bytes = 1, .cycles = 7, .nimplied_opcode = NULL, .mode = NONE};
 	strcpy(optable[0x00].mnemonic, "BRK");
@@ -210,101 +196,259 @@ static void optable_generator(void) {
 	optable[0xfe] = (opcode_t){.code = 0xfe, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_inc, .mode = ABSX};
 	strcpy(optable[0xfe].mnemonic, "INC");
 
-	optable_assign(0xe8, "INX", 1, 2, &opcode_inx, NONE);
-	optable_assign(0xc8, "INY", 1, 2, &opcode_iny, NONE);
+	optable[0xe8] = (opcode_t){.code = 0xe8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_inx, .mode = NONE};
+	strcpy(optable[0xe8].mnemonic, "INX");
 
-	optable_assign(0xc6, "DEC", 2, 5, &opcode_dec, ZP);
-	optable_assign(0xd6, "DEC", 2, 6, &opcode_dec, ZPX);
-	optable_assign(0xce, "DEC", 3, 6, &opcode_dec, ABS);
-	optable_assign(0xde, "DEC", 3, 7, &opcode_dec, ABSX);
+	optable[0xc8] = (opcode_t){.code = 0xc8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_iny, .mode = NONE};
+	strcpy(optable[0xc8].mnemonic, "INY");
 
-	optable_assign(0xca, "DEX", 1, 2, &opcode_dex, NONE);
-	optable_assign(0x88, "DEY", 1, 2, &opcode_dey, NONE);
+	optable[0xc6] = (opcode_t){.code = 0xc6, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_dec, .mode = ZP};
+	strcpy(optable[0xc6].mnemonic, "DEC");
 
-	optable_assign(0x0a, "ASL", 1, 2, &opcode_asl, ACC);
-	optable_assign(0x06, "ASL", 2, 5, &opcode_asl, ZP);
-	optable_assign(0x16, "ASL", 2, 6, &opcode_asl, ZPX);
-	optable_assign(0x0e, "ASL", 3, 6, &opcode_asl, ABS);
-	optable_assign(0x1e, "ASL", 3, 7, &opcode_asl, ABSX);
-	optable_assign(0x4a, "LSR", 1, 2, &opcode_lsr, ACC);
-	optable_assign(0x46, "LSR", 2, 5, &opcode_lsr, ZP);
-	optable_assign(0x56, "LSR", 2, 6, &opcode_lsr, ZPX);
-	optable_assign(0x4e, "LSR", 3, 6, &opcode_lsr, ABS);
-	optable_assign(0x5e, "LSR", 3, 7, &opcode_lsr, ABSX);
-	optable_assign(0x2a, "ROL", 1, 2, &opcode_rol, ACC);
-	optable_assign(0x26, "ROL", 2, 5, &opcode_lsr, ZP);
-	optable_assign(0x36, "ROL", 2, 6, &opcode_lsr, ZPX);
-	optable_assign(0x2e, "ROL", 3, 6, &opcode_lsr, ABS);
-	optable_assign(0x3e, "ROL", 3, 7, &opcode_lsr, ABSX);
+	optable[0xd6] = (opcode_t){.code = 0xd6, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_dec, .mode = ZPX};
+	strcpy(optable[0xd6].mnemonic, "DEC");
 
-	optable_assign(0xaa, "TAX", 1, 2, &opcode_tax, NONE);	
-	optable_assign(0xa8, "TAY", 1, 2, &opcode_tay, NONE);	
-	optable_assign(0x8a, "TXA", 1, 2, &opcode_txa, NONE);	
-	optable_assign(0x98, "TYA", 1, 2, &opcode_tya, NONE);	
+	optable[0xce] = (opcode_t){.code = 0xce, .bytes = 3, .cycles = 6, .nimplied_opcode = &opcode_dec, .mode = ABS};
+	strcpy(optable[0xce].mnemonic, "DEC");
 
-	optable_assign(0xba, "TSX", 1, 2, &opcode_tsx, NONE);
-	optable_assign(0x9a, "TXS", 1, 2, &opcode_txs, NONE);
-	optable_assign(0x48, "PHA", 1, 3, &opcode_pha, NONE);
-	optable_assign(0x08, "PHP", 1, 3, &opcode_php, NONE);
-	optable_assign(0x68, "PLA", 1, 4, &opcode_pla, NONE);
-	optable_assign(0x28, "PLP", 1, 4, &opcode_plp, NONE);
+	optable[0xde] = (opcode_t){.code = 0xde, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_dec, .mode = ABSX};
+	strcpy(optable[0xde].mnemonic, "DEC");
 
-	optable_assign(0x4c, "JMP", 3, 3, &opcode_jmp, ABS);
-	optable_assign(0x6c, "JMP", 3, 5, &opcode_jmp, IND);
+	optable[0x0a] = (opcode_t){.code = 0x0a, .bytes = 1, .cycles = 2, .nimplied_opcode = &opcode_asl, .mode = ACC};
+strcpy(optable[0x0a].mnemonic, "ASL");
 
-	optable_assign(0x20, "JSR", 3, 6, &opcode_jsr, ABS);
-	optable_assign(0x60, "RTS", 1, 6, &opcode_rts, NONE);
+	optable[0x06] = (opcode_t){.code = 0x06, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_asl, .mode = ZP};
+strcpy(optable[0x06].mnemonic, "ASL");
 
-	optable_assign(0x90, "BCC", 2, 2, &opcode_bcc, NONE);
-	optable_assign(0xb0, "BCS", 2, 2, &opcode_bcs, NONE);
-	optable_assign(0xf0, "BEQ", 2, 2, &opcode_beq, NONE);
-	optable_assign(0x30, "BMI", 2, 2, &opcode_bmi, NONE);
-	optable_assign(0xd0, "BNE", 2, 2, &opcode_bne, NONE);
-	optable_assign(0x10, "BPL", 2, 2, &opcode_bpl, NONE);
-	optable_assign(0x50, "BVC", 2, 2, &opcode_bvc, NONE);
-	optable_assign(0x70, "BVS", 2, 2, &opcode_bvs, NONE);
+	optable[0x16] = (opcode_t){.code = 0x16, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_asl, .mode = ZPX};
+strcpy(optable[0x16].mnemonic, "ASL");
 
-	optable_assign(0x18, "CLC", 1, 2, &opcode_clc, NONE);
-	optable_assign(0xd8, "CLD", 1, 2, &opcode_cld, NONE);
-	optable_assign(0x58, "CLI", 1, 2, &opcode_cli, NONE);
-	optable_assign(0xb8, "CLV", 1, 2, &opcode_clv, NONE);
-	optable_assign(0x38, "SEC", 1, 2, &opcode_sec, NONE);
-	optable_assign(0xf8, "SED", 1, 2, &opcode_sed, NONE);
-	optable_assign(0x78, "SEI", 1, 2, &opcode_sei, NONE);
+	optable[0x0e] = (opcode_t){.code = 0x0e, .bytes = 3, .cycles = 6, .nimplied_opcode = &opcode_asl, .mode = ABS};
+strcpy(optable[0x0e].mnemonic, "ASL");
+
+	optable[0x1e] = (opcode_t){.code = 0x1e, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_asl, .mode = ABSX};
+strcpy(optable[0x1e].mnemonic, "ASL");
 
 
-	optable_assign(0xa9, "LDA", 2, 2, &opcode_lda, IMM);
-	optable_assign(0xa5, "LDA", 2, 3, &opcode_lda, ZP);
-	optable_assign(0xb5, "LDA", 2, 4, &opcode_lda, ZPX);
-	optable_assign(0xad, "LDA", 3, 4, &opcode_lda, ABS);
-	optable_assign(0xbd, "LDA", 3, 4, &opcode_lda, ABSX);
-	optable_assign(0xb9, "LDA", 3, 4, &opcode_lda, ABSY);
-	optable_assign(0xa1, "LDA", 2, 6, &opcode_lda, INDX);
-	optable_assign(0xb1, "LDA", 2, 5, &opcode_lda, INDY);	
-	optable_assign(0xa2, "LDX", 2, 2, &opcode_ldx, IMM);
-	optable_assign(0xa6, "LDX", 2, 3, &opcode_ldx, ZP);
-	optable_assign(0xb6, "LDX", 2, 4, &opcode_ldx, ZPY);
-	optable_assign(0xae, "LDX", 3, 4, &opcode_ldx, ABS);
-	optable_assign(0xbe, "LDX", 3, 4, &opcode_ldx, ABSY);
-	optable_assign(0xa0, "LDY", 2, 2, &opcode_ldy, IMM);
-	optable_assign(0xa4, "LDY", 2, 3, &opcode_ldy, ZP);
-	optable_assign(0xb4, "LDY", 2, 4, &opcode_ldy, ZPX);
-	optable_assign(0xac, "LDY", 3, 4, &opcode_ldy, ABS);
-	optable_assign(0xbc, "LDY", 3, 4, &opcode_ldy, ABSY);
+	optable[0x4a] = (opcode_t){.code = 0x4a, .bytes = 1, .cycles = 2, .nimplied_opcode = &opcode_lsr, .mode = ACC};
+strcpy(optable[0x4a].mnemonic, "LSR");
+
+	optable[0x46] = (opcode_t){.code = 0x46, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_lsr, .mode = ZP};
+strcpy(optable[0x46].mnemonic, "LSR");
+
+	optable[0x56] = (opcode_t){.code = 0x56, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_lsr, .mode = ZPX};
+strcpy(optable[0x56].mnemonic, "LSR");
+
+	optable[0x4e] = (opcode_t){.code = 0x4e, .bytes = 3, .cycles = 6, .nimplied_opcode = &opcode_lsr, .mode = ABS};
+strcpy(optable[0x4e].mnemonic, "LSR");
+
+	optable[0x5e] = (opcode_t){.code = 0x5e, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_lsr, .mode = ABSX};
+strcpy(optable[0x5e].mnemonic, "LSR");
+
+	optable[0x2a] = (opcode_t){.code = 0x2a, .bytes = 1, .cycles = 2, .nimplied_opcode = &opcode_rol, .mode = ACC};
+strcpy(optable[0x2a].mnemonic, "ROL");
+
+	optable[0x26] = (opcode_t){.code = 0x26, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_rol, .mode = ZP};
+strcpy(optable[0x26].mnemonic, "ROL");
+
+	optable[0x36] = (opcode_t){.code = 0x36, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_rol, .mode = ZPX};
+strcpy(optable[0x36].mnemonic, "ROL");
+
+	optable[0x2e] = (opcode_t){.code = 0x2e, .bytes = 3, .cycles = 6, .nimplied_opcode = &opcode_rol, .mode = ABS};
+strcpy(optable[0x2e].mnemonic, "ROL");
+
+	optable[0x3e] = (opcode_t){.code = 0x3e, .bytes = 3, .cycles = 7, .nimplied_opcode = &opcode_rol, .mode = ABSX};
+strcpy(optable[0x3e].mnemonic, "ROL");
+
+
+	optable[0xaa] = (opcode_t){.code = 0xaa, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_tax, .mode = NONE};
+strcpy(optable[0xaa].mnemonic, "TAX");
 	
-	optable_assign(0x85, "STA", 2, 3, &opcode_sta, ZP);
-	optable_assign(0x95, "STA", 2, 4, &opcode_sta, ZPX);
-	optable_assign(0x8d, "STA", 3, 4, &opcode_sta, ABS);
-	optable_assign(0x9d, "STA", 3, 5, &opcode_sta, ABSX);
-	optable_assign(0x99, "STA", 3, 5, &opcode_sta, ABSY);
-	optable_assign(0x81, "STA", 2, 6, &opcode_sta, INDX);
-	optable_assign(0x91, "STA", 2, 6, &opcode_sta, INDY);
-	optable_assign(0x86, "STX", 2, 3, &opcode_stx, ZP);
-	optable_assign(0x96, "STX", 2, 4, &opcode_stx, ZPY);
-	optable_assign(0x8e, "STX", 3, 4, &opcode_stx, ABS);
-	optable_assign(0x84, "STY", 2, 3, &opcode_sty, ZP);
-	optable_assign(0x94, "STY", 2, 4, &opcode_sty, ZPX);
-	optable_assign(0x8c, "STY", 3, 4, &opcode_sty, ABS);
+	optable[0xa8] = (opcode_t){.code = 0xa8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_tay, .mode = NONE};
+strcpy(optable[0xa8].mnemonic, "TAY");
+	
+	optable[0x8a] = (opcode_t){.code = 0x8a, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_txa, .mode = NONE};
+strcpy(optable[0x8a].mnemonic, "TXA");
+	
+	optable[0x98] = (opcode_t){.code = 0x98, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_tya, .mode = NONE};
+strcpy(optable[0x98].mnemonic, "TYA");
+	
+
+	optable[0xba] = (opcode_t){.code = 0xba, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_tsx, .mode = NONE};
+strcpy(optable[0xba].mnemonic, "TSX");
+
+	optable[0x9a] = (opcode_t){.code = 0x9a, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_txs, .mode = NONE};
+strcpy(optable[0x9a].mnemonic, "TXS");
+
+	optable[0x48] = (opcode_t){.code = 0x48, .bytes = 1, .cycles = 3, .implied_opcode = &opcode_pha, .mode = NONE};
+strcpy(optable[0x48].mnemonic, "PHA");
+
+	optable[0x08] = (opcode_t){.code = 0x08, .bytes = 1, .cycles = 3, .implied_opcode = &opcode_php, .mode = NONE};
+strcpy(optable[0x08].mnemonic, "PHP");
+
+	optable[0x68] = (opcode_t){.code = 0x68, .bytes = 1, .cycles = 4, .implied_opcode = &opcode_pla, .mode = NONE};
+strcpy(optable[0x68].mnemonic, "PLA");
+
+	optable[0x28] = (opcode_t){.code = 0x28, .bytes = 1, .cycles = 4, .implied_opcode = &opcode_plp, .mode = NONE};
+strcpy(optable[0x28].mnemonic, "PLP");
+
+
+	optable[0x4c] = (opcode_t){.code = 0x4c, .bytes = 3, .cycles = 3, .nimplied_opcode = &opcode_jmp, .mode = ABS};
+strcpy(optable[0x4c].mnemonic, "JMP");
+
+	optable[0x6c] = (opcode_t){.code = 0x6c, .bytes = 3, .cycles = 5, .nimplied_opcode = &opcode_jmp, .mode = IND};
+strcpy(optable[0x6c].mnemonic, "JMP");
+
+
+	optable[0x20] = (opcode_t){.code = 0x20, .bytes = 3, .cycles = 6, .implied_opcode = &opcode_jsr, .mode = ABS};
+strcpy(optable[0x20].mnemonic, "JSR");
+
+	optable[0x60] = (opcode_t){.code = 0x60, .bytes = 1, .cycles = 6, .implied_opcode = &opcode_rts, .mode = NONE};
+strcpy(optable[0x60].mnemonic, "RTS");
+
+
+	optable[0x90] = (opcode_t){.code = 0x90, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bcc, .mode = NONE};
+strcpy(optable[0x90].mnemonic, "BCC");
+
+	optable[0xb0] = (opcode_t){.code = 0xb0, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bcs, .mode = NONE};
+strcpy(optable[0xb0].mnemonic, "BCS");
+
+	optable[0xf0] = (opcode_t){.code = 0xf0, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_beq, .mode = NONE};
+strcpy(optable[0xf0].mnemonic, "BEQ");
+
+	optable[0x30] = (opcode_t){.code = 0x30, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bmi, .mode = NONE};
+strcpy(optable[0x30].mnemonic, "BMI");
+
+	optable[0xd0] = (opcode_t){.code = 0xd0, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bne, .mode = NONE};
+strcpy(optable[0xd0].mnemonic, "BNE");
+
+	optable[0x10] = (opcode_t){.code = 0x10, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bpl, .mode = NONE};
+strcpy(optable[0x10].mnemonic, "BPL");
+
+	optable[0x50] = (opcode_t){.code = 0x50, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bvc, .mode = NONE};
+strcpy(optable[0x50].mnemonic, "BVC");
+
+	optable[0x70] = (opcode_t){.code = 0x70, .bytes = 2, .cycles = 2, .implied_opcode = &opcode_bvs, .mode = NONE};
+strcpy(optable[0x70].mnemonic, "BVS");
+
+
+	optable[0x18] = (opcode_t){.code = 0x18, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_clc, .mode = NONE};
+strcpy(optable[0x18].mnemonic, "CLC");
+
+	optable[0xd8] = (opcode_t){.code = 0xd8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_cld, .mode = NONE};
+strcpy(optable[0xd8].mnemonic, "CLD");
+
+	optable[0x58] = (opcode_t){.code = 0x58, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_cli, .mode = NONE};
+strcpy(optable[0x58].mnemonic, "CLI");
+
+	optable[0xb8] = (opcode_t){.code = 0xb8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_clv, .mode = NONE};
+strcpy(optable[0xb8].mnemonic, "CLV");
+
+	optable[0x38] = (opcode_t){.code = 0x38, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_sec, .mode = NONE};
+strcpy(optable[0x38].mnemonic, "SEC");
+
+	optable[0xf8] = (opcode_t){.code = 0xf8, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_sed, .mode = NONE};
+strcpy(optable[0xf8].mnemonic, "SED");
+
+	optable[0x78] = (opcode_t){.code = 0x78, .bytes = 1, .cycles = 2, .implied_opcode = &opcode_sei, .mode = NONE};
+strcpy(optable[0x78].mnemonic, "SEI");
+
+
+
+	optable[0xa9] = (opcode_t){.code = 0xa9, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_lda, .mode = IMM};
+strcpy(optable[0xa9].mnemonic, "LDA");
+
+	optable[0xa5] = (opcode_t){.code = 0xa5, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_lda, .mode = ZP};
+strcpy(optable[0xa5].mnemonic, "LDA");
+
+	optable[0xb5] = (opcode_t){.code = 0xb5, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_lda, .mode = ZPX};
+strcpy(optable[0xb5].mnemonic, "LDA");
+
+	optable[0xad] = (opcode_t){.code = 0xad, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_lda, .mode = ABS};
+strcpy(optable[0xad].mnemonic, "LDA");
+
+	optable[0xbd] = (opcode_t){.code = 0xbd, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_lda, .mode = ABSX};
+strcpy(optable[0xbd].mnemonic, "LDA");
+
+	optable[0xb9] = (opcode_t){.code = 0xb9, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_lda, .mode = ABSY};
+strcpy(optable[0xb9].mnemonic, "LDA");
+
+	optable[0xa1] = (opcode_t){.code = 0xa1, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_lda, .mode = INDX};
+strcpy(optable[0xa1].mnemonic, "LDA");
+
+	optable[0xb1] = (opcode_t){.code = 0xb1, .bytes = 2, .cycles = 5, .nimplied_opcode = &opcode_lda, .mode = INDY};
+strcpy(optable[0xb1].mnemonic, "LDA");
+	
+	optable[0xa2] = (opcode_t){.code = 0xa2, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_ldx, .mode = IMM};
+strcpy(optable[0xa2].mnemonic, "LDX");
+
+	optable[0xa6] = (opcode_t){.code = 0xa6, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_ldx, .mode = ZP};
+strcpy(optable[0xa6].mnemonic, "LDX");
+
+	optable[0xb6] = (opcode_t){.code = 0xb6, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_ldx, .mode = ZPY};
+strcpy(optable[0xb6].mnemonic, "LDX");
+
+	optable[0xae] = (opcode_t){.code = 0xae, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ldx, .mode = ABS};
+strcpy(optable[0xae].mnemonic, "LDX");
+
+	optable[0xbe] = (opcode_t){.code = 0xbe, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ldx, .mode = ABSY};
+strcpy(optable[0xbe].mnemonic, "LDX");
+
+	optable[0xa0] = (opcode_t){.code = 0xa0, .bytes = 2, .cycles = 2, .nimplied_opcode = &opcode_ldy, .mode = IMM};
+strcpy(optable[0xa0].mnemonic, "LDY");
+
+	optable[0xa4] = (opcode_t){.code = 0xa4, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_ldy, .mode = ZP};
+strcpy(optable[0xa4].mnemonic, "LDY");
+
+	optable[0xb4] = (opcode_t){.code = 0xb4, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_ldy, .mode = ZPX};
+strcpy(optable[0xb4].mnemonic, "LDY");
+
+	optable[0xac] = (opcode_t){.code = 0xac, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ldy, .mode = ABS};
+strcpy(optable[0xac].mnemonic, "LDY");
+
+	optable[0xbc] = (opcode_t){.code = 0xbc, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_ldy, .mode = ABSY};
+strcpy(optable[0xbc].mnemonic, "LDY");
+
+	
+	optable[0x85] = (opcode_t){.code = 0x85, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_sta, .mode = ZP};
+strcpy(optable[0x85].mnemonic, "STA");
+
+	optable[0x95] = (opcode_t){.code = 0x95, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_sta, .mode = ZPX};
+strcpy(optable[0x95].mnemonic, "STA");
+
+	optable[0x8d] = (opcode_t){.code = 0x8d, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_sta, .mode = ABS};
+strcpy(optable[0x8d].mnemonic, "STA");
+
+	optable[0x9d] = (opcode_t){.code = 0x9d, .bytes = 3, .cycles = 5, .nimplied_opcode = &opcode_sta, .mode = ABSX};
+strcpy(optable[0x9d].mnemonic, "STA");
+
+	optable[0x99] = (opcode_t){.code = 0x99, .bytes = 3, .cycles = 5, .nimplied_opcode = &opcode_sta, .mode = ABSY};
+strcpy(optable[0x99].mnemonic, "STA");
+
+	optable[0x81] = (opcode_t){.code = 0x81, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_sta, .mode = INDX};
+strcpy(optable[0x81].mnemonic, "STA");
+
+	optable[0x91] = (opcode_t){.code = 0x91, .bytes = 2, .cycles = 6, .nimplied_opcode = &opcode_sta, .mode = INDY};
+strcpy(optable[0x91].mnemonic, "STA");
+
+	optable[0x86] = (opcode_t){.code = 0x86, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_stx, .mode = ZP};
+strcpy(optable[0x86].mnemonic, "STX");
+
+	optable[0x96] = (opcode_t){.code = 0x96, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_stx, .mode = ZPY};
+strcpy(optable[0x96].mnemonic, "STX");
+
+	optable[0x8e] = (opcode_t){.code = 0x8e, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_stx, .mode = ABS};
+strcpy(optable[0x8e].mnemonic, "STX");
+
+	optable[0x84] = (opcode_t){.code = 0x84, .bytes = 2, .cycles = 3, .nimplied_opcode = &opcode_sty, .mode = ZP};
+strcpy(optable[0x84].mnemonic, "STY");
+
+	optable[0x94] = (opcode_t){.code = 0x94, .bytes = 2, .cycles = 4, .nimplied_opcode = &opcode_sty, .mode = ZPX};
+strcpy(optable[0x94].mnemonic, "STY");
+
+	optable[0x8c] = (opcode_t){.code = 0x8c, .bytes = 3, .cycles = 4, .nimplied_opcode = &opcode_sty, .mode = ABS};
+strcpy(optable[0x8c].mnemonic, "STY");
+
 
 }
 

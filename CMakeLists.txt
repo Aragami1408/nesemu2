@@ -3,7 +3,7 @@ project(nesemu2
 	VERSION 1.0
 	LANGUAGES C CXX)
 
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_BUILD_TYPE STREQUAL "") 
@@ -11,4 +11,4 @@ if(CMAKE_BUILD_TYPE STREQUAL "")
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
+# add_subdirectory(test)

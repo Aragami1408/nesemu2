@@ -25,10 +25,8 @@ set(TARGET ${CMAKE_PROJECT_NAME})
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
 include_directories(${TARGET} ${SDL2_INCLUDE_DIRS})
 include_directories(${TARGET} ${SDL2_IMAGE_INCLUDE_DIRS})
-include_directories(${TARGET} ${SDL2_TTF_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.c)
 set(SOURCES ${SOURCES})
