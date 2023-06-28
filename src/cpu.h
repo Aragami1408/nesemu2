@@ -42,18 +42,14 @@ typedef struct cpu {
 	u8 memory[MEMORY_MAX];
 } cpu_t;
 
-typedef void (*opcode_implied)(cpu_t *);
-typedef void (*opcode_non_implied)(cpu_t *, enum addressing_mode_t);
+typedef void (*opcode_func)(cpu_t *, enum addressing_mode_t);
 
 typedef struct opcode {
 	u8 code;
 	char mnemonic[4];
 	int bytes;
 	int cycles;
-	union {
-		opcode_non_implied nimplied_opcode;
-		opcode_implied implied_opcode;
-	};
+	opcode_func func;
 	enum addressing_mode_t mode;
 } opcode_t;
 
@@ -115,18 +111,18 @@ void opcode_stx(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_sty(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Register Transfers
-void opcode_tax(cpu_t *cpu);
-void opcode_tay(cpu_t *cpu);
-void opcode_txa(cpu_t *cpu);
-void opcode_tya(cpu_t *cpu);
+void opcode_tax(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_tay(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_txa(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_tya(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Stack Operations
-void opcode_tsx(cpu_t *cpu);
-void opcode_txs(cpu_t *cpu);
-void opcode_pha(cpu_t *cpu);
-void opcode_php(cpu_t *cpu);
-void opcode_pla(cpu_t *cpu);
-void opcode_plp(cpu_t *cpu);
+void opcode_tsx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_txs(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_pha(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_php(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_pla(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_plp(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Logical
 void opcode_and(cpu_t *cpu, enum addressing_mode_t addr_mode);
@@ -143,11 +139,11 @@ void opcode_cpy(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Increments & Decrements
 void opcode_inc(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_inx(cpu_t *cpu);
-void opcode_iny(cpu_t *cpu);
+void opcode_inx(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_iny(cpu_t *cpu, enum addressing_mode_t addr_mode);
 void opcode_dec(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_dex(cpu_t *cpu);
-void opcode_dey(cpu_t *cpu);
+void opcode_dex(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_dey(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Shifts
 void opcode_asl(cpu_t *cpu, enum addressing_mode_t addr_mode);
@@ -157,29 +153,29 @@ void opcode_ror(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Jumps & Calls
 void opcode_jmp(cpu_t *cpu, enum addressing_mode_t addr_mode);
-void opcode_jsr(cpu_t *cpu);
-void opcode_rts(cpu_t *cpu);
+void opcode_jsr(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_rts(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Branches
-void opcode_bcc(cpu_t *cpu);
-void opcode_bcs(cpu_t *cpu);
-void opcode_beq(cpu_t *cpu);
-void opcode_bmi(cpu_t *cpu);
-void opcode_bne(cpu_t *cpu);
-void opcode_bpl(cpu_t *cpu);
-void opcode_bvc(cpu_t *cpu);
-void opcode_bvs(cpu_t *cpu);
+void opcode_bcc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bcs(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_beq(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bmi(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bne(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bpl(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bvc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_bvs(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // Status Flag Changes
-void opcode_clc(cpu_t *cpu);
-void opcode_cld(cpu_t *cpu);
-void opcode_cli(cpu_t *cpu);
-void opcode_clv(cpu_t *cpu);
-void opcode_sec(cpu_t *cpu);
-void opcode_sed(cpu_t *cpu);
-void opcode_sei(cpu_t *cpu);
+void opcode_clc(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cld(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_cli(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_clv(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sec(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sed(cpu_t *cpu, enum addressing_mode_t addr_mode);
+void opcode_sei(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 // System Functions
-void opcode_rti(cpu_t *cpu);
+void opcode_rti(cpu_t *cpu, enum addressing_mode_t addr_mode);
 
 #endif
